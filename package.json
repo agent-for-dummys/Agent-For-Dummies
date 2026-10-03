@@ -1,0 +1,22 @@
+{
+  "name": "agent-for-dummies-notes",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sync": "node scripts/sync-content.mjs",
+    "dev": "npm run sync && vitepress dev site --host 127.0.0.1 --port 4173",
+    "build": "npm run sync && vitepress build site",
+    "preview": "vitepress preview site --host 127.0.0.1 --port 4173"
+  },
+  "devDependencies": {
+    "minisearch": "^7.2.0",
+    "vitepress": "1.6.4",
+    "vue": "^3.5.13",
+    "markdown-it-mathjax3": "^4.3.2"
+  },
+  "overrides": {
+    "vite": "^6.4.3",
+    "@xmldom/xmldom": "^0.9.12"
+  }
+}

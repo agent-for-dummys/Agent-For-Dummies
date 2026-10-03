@@ -9,3 +9,12 @@ desktop.ini
 *.p12
 *.pfx
 secrets/
+node_modules/
+site/.vitepress/cache/
+site/.vitepress/dist/
+site/notes/
+site/index.md
+site/en.md
+site/catalog.md
+site/public/assets/
+/work/
