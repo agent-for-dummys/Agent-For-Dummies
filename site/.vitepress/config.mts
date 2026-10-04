@@ -91,7 +91,7 @@ export default defineConfig({
     plugins: [{
       name: 'sync-repository-notes',
       configureServer(server) {
-        const sources = ['README.md', 'README_EN.md', 'docs', 'assets'].map(file => path.join(root, file));
+        const sources = ['HOMEPAGE.md', 'HOMEPAGE_EN.md', 'docs', 'assets'].map(file => path.join(root, file));
         server.watcher.add(sources);
         let pending = Promise.resolve();
         server.watcher.on('all', (event, file) => {

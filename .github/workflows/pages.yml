@@ -3,7 +3,7 @@ name: Publish learning notes
 on:
   push:
     branches: [main]
-    paths: ['README*.md', 'docs/**', 'assets/**', 'site/**', 'scripts/**', 'package*.json', '.github/workflows/pages.yml']
+    paths: ['HOMEPAGE*.md', 'docs/**', 'assets/**', 'site/**', 'scripts/**', 'package*.json', '.github/workflows/pages.yml']
   workflow_dispatch:
 
 permissions:

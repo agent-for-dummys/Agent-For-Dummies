@@ -1,6 +1,6 @@
 # 网站维护
 
-网站用 VitePress 构建。首页来自根目录的 README.md；阅读页来自 docs/ 中的 Markdown。原始内容是唯一维护入口，不用再编辑一份网页内容。
+网站用 VitePress 构建。中文首页来自根目录的 HOMEPAGE.md，英文首页来自 HOMEPAGE_EN.md；阅读页来自 docs/ 中的 Markdown。原始内容是唯一维护入口，不用再编辑生成后的网页文件。
 
 ## 本地查看
 
@@ -11,7 +11,7 @@ npm install
 npm run dev
 ```
 
-打开 http://127.0.0.1:4173/ 。修改 README.md 或 docs/ 后，阅读页自动更新。
+打开 http://127.0.0.1:4173/ 。修改 HOMEPAGE.md、HOMEPAGE_EN.md 或 docs/ 后，网站内容自动更新。
 
 当前项目目录：`D:\expe\agent-for-dummies`。
 
@@ -25,8 +25,9 @@ npm run preview
 ## 内容与样式
 
 - 修改文章：编辑 docs/ 中的原文件。
-- 修改首页：编辑 README.md。
-- 首页展示 README 的标题、简介、阅读入口、目录与许可信息；生成时精简重复的引导段落。可在 scripts/sync-content.mjs 的 presentReadme 中调整。
+- 修改中文首页：编辑 HOMEPAGE.md；修改英文首页：编辑 HOMEPAGE_EN.md。
+- 首页内容按 Markdown 原样生成，可在对应的首页文件中维护介绍、阅读入口和文档目录。
+- 首页兼容 GitHub 粘贴图片时生成的 `<img>` 标签：同步时转换为自适应的 Markdown 图片，并保留公网附件地址。代码块中的图片示例保持为代码。
 - 增加文章或调整分类：在 scripts/catalog.mjs 中补充编号、标题、分类和英文路由。
 - 修改排版与配色：编辑 site/.vitepress/theme/style.css。
 - 网站启动和构建时自动生成页面、修正文档图片路径和整理标题层级；原文件保持不变。

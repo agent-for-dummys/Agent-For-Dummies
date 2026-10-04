@@ -5,7 +5,7 @@ import { chapters } from './catalog.mjs';
 
 export const root = fileURLToPath(new URL('../', import.meta.url));
 const site = path.join(root, 'site');
-const repository = 'https://github.com/MorningRainn/Agent-For-Dummies';
+const repository = 'https://github.com/agent-for-dummys/Agent-For-Dummies';
 
 async function writeChanged(file, content) {
   await mkdir(path.dirname(file), { recursive: true });
@@ -16,9 +16,10 @@ async function writeChanged(file, content) {
 
 function rewriteLinks(source, files) {
   return source.replace(/\]\(([^)]+)\)/g, (match, destination) => {
+    if (/^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(destination.trim())) return match;
     let target;
     try { target = decodeURIComponent(destination); } catch { return match; }
-    if (/(?:\.\.\/)*assets\//.test(target)) return `](/assets/${target.split('/').pop()})`;
+    if (/^(?:\.\.\/|\.\/)*assets\//.test(target)) return `](/assets/${target.split('/').pop()})`;
     if (target === 'README.md') return '](/)';
     if (target === 'README_EN.md') return '](/en)';
     if (target === 'LICENSE') return `](${repository}/blob/main/LICENSE)`;
@@ -27,6 +28,35 @@ function rewriteLinks(source, files) {
     if (index >= 0) return `](${chapters[index].link}${hash ? '#' + hash : ''})`;
     return match;
   });
+}
+
+function prepareReadme(source) {
+  const convert = fragment => fragment.replace(/<img\b[^>]*>/gi, tag => {
+    const src = tag.match(/\ssrc\s*=\s*(["'])(.*?)\1/is)?.[2];
+    if (!src || (/^[a-z][a-z\d+.-]*:/i.test(src) && !/^https?:\/\//i.test(src))) return tag;
+    const alt = tag.match(/\salt\s*=\s*(["'])(.*?)\1/is)?.[2];
+    const label = (!alt || alt === 'image' ? 'Website image' : alt).replace(/[\\\[\]]/g, '\\$&').replace(/\r?\n/g, ' ');
+    const url = src.replace(/&amp;/g, '&').replace(/ /g, '%20').replace(/\(/g, '%28').replace(/\)/g, '%29');
+    return `\n\n![${label}](${url})\n\n`;
+  });
+  const output = [];
+  const plain = [];
+  let fence = null;
+  const flush = () => {
+    if (plain.length) output.push(convert(plain.join('\n')));
+    plain.length = 0;
+  };
+  for (const line of source.split('\n')) {
+    const marker = line.match(/^[ \t]*(`{3,}|~{3,})/);
+    if (fence) {
+      output.push(line);
+      if (marker && marker[1][0] === fence[0] && marker[1].length >= fence.length && !line.slice(marker[0].length).trim()) fence = null;
+    } else if (marker) {
+      flush(); output.push(line); fence = marker[1];
+    } else plain.push(line);
+  }
+  flush();
+  return output.join('\n');
 }
 
 // Normalize heading depth for a readable outline without changing source notes.
@@ -95,11 +125,18 @@ export async function syncContent() {
     };
     await writeChanged(path.join(site, 'notes', `${chapter.slug}.md`), `---\n${Object.entries(meta).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join('\n')}\n---\n\n# ${chapter.title}\n\n${body}\n`);
   }
-  for (const [input, output, title, pageClass] of [['README.md', 'index.md', '首页', 'readme-page'], ['README_EN.md', 'en.md', 'English', 'readme-page']]) {
-    const source = rewriteLinks((await readFile(path.join(root, input), 'utf8')).replace(/\r\n/g, '\n'), files).replace(/^# 🤖 /, '# ');
-    const body = presentReadme(source, input === 'README_EN.md' ? 'en' : 'zh');
-    await writeChanged(path.join(site, output), `---\ntitle: ${title}\nsidebar: false\nsearch: false\npageClass: ${pageClass}\nsource: ${input}\nprev: false\nnext: false\n---\n\n${body}`);
-  }
+  const homepage = (await readFile(path.join(root, 'HOMEPAGE.md'), 'utf8')).replace(/\r\n/g, '\n');
+  const homepageBody = rewriteLinks(prepareReadme(homepage), files);
+  await writeChanged(
+    path.join(site, 'index.md'),
+    `---\ntitle: 首页\nsidebar: false\nsearch: false\npageClass: readme-page\nsource: HOMEPAGE.md\nprev: false\nnext: false\n---\n\n${homepageBody.trim()}\n`
+  );
+  const englishHomepage = (await readFile(path.join(root, 'HOMEPAGE_EN.md'), 'utf8')).replace(/\r\n/g, '\n');
+  const englishHomepageBody = rewriteLinks(prepareReadme(englishHomepage), files);
+  await writeChanged(
+    path.join(site, 'en.md'),
+    `---\ntitle: English\nsidebar: false\nsearch: false\npageClass: readme-page\nsource: HOMEPAGE_EN.md\nprev: false\nnext: false\n---\n\n${englishHomepageBody.trim()}\n`
+  );
   const catalog = `---\ntitle: 文档目录\nsidebar: false\nsearch: false\noutline: false\npageClass: catalog-page\nprev: false\nnext: false\n---\n\n# 文档目录\n\n` + (await import('./catalog.mjs')).groups.map(group => `## ${group.title}\n\n${chapters.filter(chapter => group.ids.includes(chapter.id)).map(chapter => `- [${String(chapter.id).padStart(2, '0')}　${chapter.title}](${chapter.link})`).join('\n')}`).join('\n\n');
   await writeChanged(path.join(site, 'catalog.md'), catalog);
   await mkdir(path.join(site, 'public'), { recursive: true });
@@ -108,5 +145,5 @@ export async function syncContent() {
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   await syncContent();
-  console.log(`Synced README and ${chapters.length} chapters.`);
+  console.log(`Synced HOMEPAGE.md, HOMEPAGE_EN.md and ${chapters.length} chapters.`);
 }
