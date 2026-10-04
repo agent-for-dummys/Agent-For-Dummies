@@ -36,7 +36,7 @@ export default defineConfig({
       }))
     })),
     outline: { level: [2, 3], label: '本页目录' },
-    socialLinks: [{ icon: 'github', link: 'https://github.com/MorningRainn/Agent-For-Dummies' }],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/agent-for-dummys/Agent-For-Dummies' }],
     editLink: {
       pattern: ({ frontmatter }) => frontmatter.source ? `https://github.com/MorningRainn/Agent-For-Dummies/edit/main/${encodeURI(frontmatter.source)}` : '',
       text: '在 GitHub 编辑此页'
