@@ -1,40 +1,40 @@
 ## 感知指标
-#### Precision（Pk）
+### Precision（Pk）
 准确率
 - TP：正确 
 - FP：错误
-![diagram](../../assets/pasted-image-20251111192118.png)
+![diagram](/assets/pasted-image-20251111192118.png)
 
-#### Recall（Rk）
+### Recall（Rk）
 被检测到的比例（召回率） ，即能看到多少，全不全
 - TP：检测正确 
 - FN 漏检（False Negative）
-![diagram](../../assets/pasted-image-20251111192149.png)
-#### F1@k Score
+![diagram](/assets/pasted-image-20251111192149.png)
+### F1@k Score
 精确率与召回率的调和平均，综合反映检测准确性；要求模型既要“看得准”（Precision 高）又要“看得全”（Recall 高）。
 - @k 含义：容忍的误差范围。k = 0.5/1.0/2.0/4.0 m 为正样本距离阈值。k越小越严格
 - eg：预测一辆车在 (10.0 m, 5.0 m)，而真实在 (10.6 m, 5.3 m)，对比预测距离和真实举例之间的距离是否在k之内
-![diagram](../../assets/pasted-image-20251111192235.png)
-#### F1 (Lane Detection)
+![diagram](/assets/pasted-image-20251111192235.png)
+### F1 (Lane Detection)
 检测车道线的准确率。  看看模型画的线和真实车道线对不对齐。
-![diagram](../../assets/pasted-image-20251111192754.png)
+![diagram](/assets/pasted-image-20251111192754.png)
 
 ## 语言理解指标(Captioning)
-#### Caption Accuracy / Hallucination Rate
+### Caption Accuracy / Hallucination Rate
 1. Caption Accuracy（描述准确率）
 2. Hallucination Rate（幻觉率）
 eg：
-![diagram](../../assets/pasted-image-20251111194711.png)
+![diagram](/assets/pasted-image-20251111194711.png)
 
 ## 规划指标(Planning)
 衡量模型预测的行驶轨迹和真实轨迹差多远（→ L2 Error）以及模型会不会撞到别人（→ Collision Rate）。
-#### L2 Error
+### L2 Error
 衡量模型预测轨迹与真实驾驶者轨迹的平均欧氏距离。
 L2 越小，说明车走得越接近真实路线，规划越准确
 - 平均欧氏距离：
-![diagram](../../assets/pasted-image-20251111195644.png)
+![diagram](/assets/pasted-image-20251111195644.png)
 
-#### Collision Rate (%)（碰撞率）
+### Collision Rate (%)（碰撞率）
 **Collision Rate** 就是统计模型规划的路线中，有多少帧（时刻）与别的车或行人“相交”了。 
 假设在一次测试中共有 1000 帧行驶画面，  其中 3 帧出现了碰撞（与行人或其他车辆交叉）：
 $$
@@ -46,7 +46,7 @@ $$
 
 ## 模型消融指标
 - **消融实验**：把一个个指标去掉或者加回去重新跑实验看指标变化，比较不同结构效果差异
-#### Avg. L2 / Avg. Col.（平均规划误差与碰撞率）
+### Avg. L2 / Avg. Col.（平均规划误差与碰撞率）
 - **Avg. L2**：模型预测的行驶路线平均偏离真实轨迹的距离
 - **Avg. Col.（平均碰撞率）**：模型规划路线时平均发生碰撞的概率
 
@@ -60,21 +60,21 @@ ORION的核心贡献：让VLM的推理能力真正控制自动驾驶轨迹，让
 3. 生成式规划期（执行器模块）：把2的分析结果转换成具体的行车轨迹
 ## 闭环驾驶指标
 闭环：模型真的开车，在线模拟实际驾驶能力
-#### Driving Score (DS) 
+### Driving Score (DS) 
 **综合驾驶得分**
 Driving Score（DS）是 Bench2Drive / CARLA 官方用于评估自动驾驶系统总体表现的“综合得分”
 综合路线完成度（Route Completion） + 违规扣分（Infraction Penalties）
 
-#### Success Rate (SR)
+### Success Rate (SR)
 成功完成路线比例
 
-#### Efficiency
+### Efficiency
 速度效率
 
-#### Comfortness
+### Comfortness
 舒适度
 
-#### Multi-Ability(5 skill)
+### Multi-Ability(5 skill)
 将自动驾驶拆分成5类能力：
 1. 并线：测试能否在主路交通流中顺利并入车道
 2. 超车：能否超过前方慢速车
@@ -86,14 +86,14 @@ Driving Score（DS）是 Bench2Drive / CARLA 官方用于评估自动驾驶系�
 
 ## 开环驾驶指标
 开环：只预测，不执行，离线评估模型想怎么开。
-#### Avg. L2 Error
+### Avg. L2 Error
 预测轨迹与真实轨迹的平均欧氏距离误差
 
-#### Collision Rate (%)
+### Collision Rate (%)
 碰撞率：预测轨迹与物体相交的比例
 
 ## 语言理解指标
-#### CIDEr
+### CIDEr
 Consensus-based Image Description Evaluation
 - 你写得“像不像一群人公认的好描述”。
 文本生成质量指标，匹配共识或关键细节
@@ -102,13 +102,13 @@ Consensus-based Image Description Evaluation
 - 稀有但关键的词（pedestrian, crosswalk, stop） 权重高
 - 比对生成文本 vs 多条参考描述
 
-#### BLEU
+### BLEU
 Bilingual Evaluation Understudy
 - 你写得“像不像标准答案那句话”。
 评估生成文本与参考文本之间在 n-gram（词组）层面的 **精确匹配程度**，匹配越多分数越高
 即模型写的句子，有多少“词组（n-gram）”和人工参考句子一样
 
-#### ROUGE-L
+### ROUGE-L
 ROUGE：Recall-Oriented Understudy for Gisting Evaluation
 ROUGE-L：基于 **最长公共子序列（LCS, Longest Common Subsequence）** 的版本，
 用于衡量模型的描述/回答是否覆盖了参考答案的关键信息
@@ -133,23 +133,23 @@ ETA通过一个Forecasting（未来预测模块），采用异步双系统架构
 2. 提出一个双重框架，分批预测大型模型推理和及时调整小型模型
 大模型在t–Δ时刻预测当前帧，小模型在当前帧快速补充（大模型可能有些预测不到突然发生的事，比如行人突然冲出来、前车突然急刹等等）
 ## 闭环指标
-#### Driving Score (DS)
+### Driving Score (DS)
 **综合驾驶得分**
 由Route Completion（路线完成度）和Infraction Penalties（违规扣分）等综合衡量
-#### Success Rate (SR)
+### Success Rate (SR)
 成功完成路线的比例
-#### Efficiency
+### Efficiency
 驾驶效率，衡量模型在驾驶过程中的“**流畅性与高效性**”
 判断驾驶速度是否合理，是否在不必要时停下，是否顺畅完成驾驶动作
-#### Comfort
+### Comfort
 舒适度，衡量自动驾驶模型在执行驾驶任务时的**平稳性**
 包括加减速是否流畅、是否出现急刹/急加速、转向是否平稳、车辆是否存在来回晃动或犹豫停顿。Comfort 越高，表示乘客乘坐体验越好。
-#### Latency (ms)
+### Latency (ms)
 推理延迟
 自动驾驶模型看到场景 → 理解 → 规划 → 输出方向盘/油门/刹车指令所需要的时间
 即模型从**接受传感器输入**到**输出控制指令**所需要的时间
 
-#### Mean Ability
+### Mean Ability
 五项能力得分均值
 五项能力：Merging并线、Overtaking超车、Emergency Brake紧急刹车、Give Way让行、Traffic Sign交通标志响应
 - 每一项公式都是`成功任务数/任务总数`
@@ -158,11 +158,11 @@ ETA通过一个Forecasting（未来预测模块），采用异步双系统架构
 ## 《RoboTron-Drive:All-in-OneLargeMultimodalModelforAutonomousDriving》
 
 
-## Language
+### Language
 看回答像不像人话
 评估回答的 **语言形式质量**，包括 是否是“正常句子”格式、是否正确、是否包含 AI 自述（如“作为一个AI模型…”）、是否存在乱码 空输出、是否语法混乱 不可读
 - 计算标准：通常通过一套rule-based规则，按照规则累计分或者是扣分
-## Match
+### Match
 评估 **回答内容与 Ground Truth 的语义重合度**，不是 GPT 打分，而是 rule-based 对关键 token 对齐。
 提取 GT 中的关键词（vehicle / pedestrian / turning right）进行匹配
 
@@ -198,15 +198,15 @@ Dolphins 是一个用于自动驾驶的多模态大模型（Vision-Language Mode
 	
 
 ----
-# 常用指标
-## BLEU
+## 常用指标
+### BLEU
 衡量 **N-gram 的重合度**
 - 核心思想：
 	1. N-gram精确率：看模型输出的字串（1-gram、2-gram、3-gram、4-gram）有多少能在参考答案里找到。
 	2. 长度惩罚（Brevity Penalty, BP）：防止模型输出特别短的句子骗分
 
 
-## ROUGE
+### ROUGE
 评价文本生成质量的指标，看模型输出中是否包含参考答案中的重要内容，**覆盖程度**
 - 包括：
 	1. ROUGE-1：单词级别的召回，看模型输出覆盖标准答案的多少
@@ -215,7 +215,7 @@ Dolphins 是一个用于自动驾驶的多模态大模型（Vision-Language Mode
 		计算：ROUGE-L=最长公共子序列/标准答案长度
 >召回率：覆盖度
 
-## CIDEr
+### CIDEr
 衡量**语义内容一致性**，强调**关键词**的重要性
 CIDEr 尤其擅长奖励包含关键信息的句子（例如红灯、行人、刹车、变道）。
 - 组成：
@@ -227,23 +227,23 @@ CIDEr 尤其擅长奖励包含关键信息的句子（例如红灯、行人、�
 CIDEr reward = 若你提到关键内容 → 加很多分
 CIDEr penalty = 若你漏掉关键内容 → 扣很多分
 
-## METEOR
+### METEOR
 Metric for Evaluation of Translation with Explicit ORdering
 是一种用于评估 **文本生成质量** 的指标，比BLEU更智能，因为允许同义词、词干匹配、重复惩罚、精确匹配和召回率的平衡
 - 计算：
 	1. 
 
-## L2 Error
+### L2 Error
 
 
-## Collision Rate
+### Collision Rate
 
 
-## Route Completion
+### Route Completion
 路线完成度
 在路线中设定一系列check-points（检查点），每通过一个 check-point，就算完成一段距离，最终完成度 = 已通过距离 / 路线总距离。
 
-## Infraction Score（IS）
+### Infraction Score（IS）
 安全性指标
 
 
@@ -251,29 +251,29 @@ Metric for Evaluation of Translation with Explicit ORdering
 
 ---
 
-# 数据集
-## Bench2Drive
+## 数据集
+### Bench2Drive
 Bench2Drive 是一个专门给端到端自动驾驶（E2E-AD）用的、**闭环测试**用的标准基准（benchmark），运行在 CARLA 上，用来系统地考察模型在多种驾驶能力上的表现
 - 拥有顶尖专家模型Think2Drive构建的官方训练数据集
 评估指标：
 	1. **Success Rate (SR)** 成功率 ，是否完成每条路线的驾驶目标。必须在规定时间内、遵守交通规则、到达目标点，否则视为失败。
-	![diagram](../../assets/pasted-image-20251118091213.png)
+	![diagram](/assets/pasted-image-20251118091213.png)
 	2. **Driving Score (DS)** 驾驶评分，完成路线的比例 × 惩罚因子
-	![diagram](../../assets/pasted-image-20251118091242.png)
+	![diagram](/assets/pasted-image-20251118091242.png)
 	3. **Efficiency**（ 效率，20 个 checkpoint，检测车辆速度是否过慢
-	![diagram](../../assets/pasted-image-20251118091251.png)
-	![diagram](../../assets/pasted-image-20251118091304.png)
+	![diagram](/assets/pasted-image-20251118091251.png)
+	![diagram](/assets/pasted-image-20251118091304.png)
 	4. **Comfort**（舒适性）用于评估车辆轨迹的 **加速度、横摆角速度、jerk 等行为是否符合“人类驾驶者的舒适范围”**。
 	帧变量平滑度FVS：
-	![diagram](../../assets/pasted-image-20251118091313.png)
-	![diagram](../../assets/pasted-image-20251118091445.png)
-	![diagram](../../assets/pasted-image-20251118091457.png)
-	![diagram](../../assets/pasted-image-20251118091507.png)
+	![diagram](/assets/pasted-image-20251118091313.png)
+	![diagram](/assets/pasted-image-20251118091445.png)
+	![diagram](/assets/pasted-image-20251118091457.png)
+	![diagram](/assets/pasted-image-20251118091507.png)
 	5. **Multi-Ability**（五大能力成功率）
 提供了一个大规模数据集，都是在CARLA v2环境里生成的
 
 
-## nuScenes
+### nuScenes
 一个用于自动驾驶的**多模态数据集**
 nuScenes 是首个提供 **全传感器套件（6 cameras + 5 radars + 1 lidar）+ 360° + 属性标注** 的 **大规模** 数据集。
 - 解决痛点
@@ -339,13 +339,13 @@ nuScenes 是首个提供 **全传感器套件（6 cameras + 5 radars + 1 lidar�
 		常用指标：
 		1. mloU
 
-## Carla：仿真模拟平台
+### Carla：仿真模拟平台
 开发了`Town05Long`和`Longest6`等基准测试，要求自动驾驶在特定时限内安全完成多路线行驶任务。（这类任务相对简单）
 最常用的基准测试：Town05-Short
-## Carla Leaderboard v2
+### Carla Leaderboard v2
 新增39个高难度场景，专门用于评估自动驾驶系统在复杂交通环境中的鲁棒性。但是过于复杂，难以完美完成，不同驾驶系统中有效比较困难——得分往往都比较低
 
-## CODA-LM
+### CODA-LM
 Corner-case QA（极端场景问答）
 是一个用于自动驾驶**视觉场景问答**的*Corner Case*（危险/罕见场景）数据集，专门评估模型在极端、异常驾驶环境下的理解能力和安全推理能力。并不是做检测、分割，而是 **自然语言问答（QA）任务**。
 设计的具有挑战性的场景，比如行人突然闯进车道、逆行/违规车辆、突发障碍物、实现受限等。
@@ -355,7 +355,7 @@ Corner-case QA（极端场景问答）
 	3. Suggestion QA（驾驶策略 / 决策建议）
 
 
-## MAPLM
+### MAPLM
 是一个**道路语义理解**的视觉问答数据集
 让模型理解道路结构、道路类别、车道类型、交通属性，并用自然语言回答问题。
 - 包括
@@ -367,7 +367,7 @@ Corner-case QA（极端场景问答）
 		即输入图像＋区域，输出自然语言
 		eg：“描述前方道路结构。”
 
-## DriveLM 
+### DriveLM 
 - 指标在论文p39
 把**问答+推理+规划**整合到一个多模态VLM体系里，让大模型像老司机一样通过理解场景、回答问题再做决策。
 - 数据集：（有两套数据集）
@@ -385,10 +385,10 @@ Corner-case QA（极端场景问答）
 	- 运动规划 / 轨迹预测（Motion Planning）
 		1. L2 Error（轨迹 L2 误差），预测的未来轨迹（waypoints）与 GT 轨迹之间的 L2 距离误差
 		 计算公式：对未来**每个点**计算距离误差 然后**对所有点求平均**
-		 ![diagram](../../assets/pasted-image-20251123113324.png)
+		 ![diagram](/assets/pasted-image-20251123113324.png)
 		2. Final Displacement Error（FDE，最终点误差），只看最后一个点的位置，衡量整体是否偏航。
 
-## LingoQA
+### LingoQA
 一个专为自动驾驶VQA设计的数据集。提出了一种名为Lingo-Judge的诚实度分类器，它是一个学习到的文本分类器，用于判断回答是否真实正确
 - 目的：解决 BLEU/ROUGE/CIDEr 无法判断语义正确性的问题
 - 输入和输出：
@@ -399,15 +399,15 @@ Corner-case QA（极端场景问答）
 
 白车黑车顺序说反了但是中心点找对了：属于核心事实错误。
 lingo-judge是用来评估**语义**的
-## OmniDrive
+### OmniDrive
 OmniDrive是一个基于**反事实推理**的自动驾驶全局视觉-语言数据集。提出了两种OmniDrive-Agent框架：
 1. Omni-Q：从三维感知角度设计VLMs
 2. Omni-L：增强VLMs三维整合能力
 eg:
-![diagram](../../assets/pasted-image-20251126111411.png)
+![diagram](/assets/pasted-image-20251126111411.png)
 
 
-## NuInstruct
+### NuInstruct
 (指标P13)
 - 有 **4 大类 17 个任务**
 	1. Perception 感知类任务
@@ -434,7 +434,7 @@ eg:
 >Reasoning：推理任务
 
 
-## BDD-X
+### BDD-X
 较老？18年）
 是一个基于真实行车视频的数据集，为每段驾驶行为提供两部分人工标注：行动描述（Action Description）+ 行动解释（Action Justification）
 - 由6984段视频组成
