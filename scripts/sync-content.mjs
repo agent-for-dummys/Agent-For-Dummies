@@ -19,7 +19,7 @@ function rewriteLinks(source, files) {
     if (/^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(destination.trim())) return match;
     let target;
     try { target = decodeURIComponent(destination); } catch { return match; }
-    if (/^(?:\.\.\/|\.\/)*assets\//.test(target)) return `](/assets/${target.split('/').pop()})`;
+    if (/^(?:\.\.\/|\.\/)*assets\//.test(target)) return `](/${target.replace(/^(?:\.\.\/|\.\/)+/, '')})`;
     if (target === 'README.md') return '](/)';
     if (target === 'README_EN.md') return '](/en)';
     if (target === 'LICENSE') return `](${repository}/blob/main/LICENSE)`;

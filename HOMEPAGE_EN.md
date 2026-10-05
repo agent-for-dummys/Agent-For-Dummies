@@ -27,6 +27,7 @@ You can also use the search box in the navigation bar to find a topic or term.
 - [01　Agent Fundamentals and Beyond](/notes/agent)
 - [02　Function Calling, MCP, and Skills](/notes/tools)
 - [03　RAG](/notes/rag)
+- [13　harness](/notes/harness)
 
 ### Model Fundamentals
 

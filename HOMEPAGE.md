@@ -27,6 +27,7 @@
 - [01　Agent 基础与进阶](/notes/agent)
 - [02　Function Calling、MCP、Skills](/notes/tools)
 - [03　RAG](/notes/rag)
+- [13　harness](/notes/harness)
 
 ### 模型基础
 
