@@ -1,9 +1,11 @@
-# 🤖 Agent For Dummies | 学习笔记
+<img width="1920" height="1020" alt="image" src="https://github.com/user-attachments/assets/cfc900b6-a647-43bd-b556-b07efe61eb04" /># 🤖 Agent For Dummies | 学习笔记
 
 在线阅读：https://agent-for-dummys.github.io/Agent-For-Dummies
 
 ## 预览
 <img width="2159" alt="preview_1" src="./assets/preview_1.png" />
+![Uploading image.png…]()
+
 <img width="2159" alt="preview_2" src="./assets/preview_2.png" />
 
 ## 说明
