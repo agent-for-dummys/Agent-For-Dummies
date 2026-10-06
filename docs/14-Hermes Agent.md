@@ -1,5 +1,3 @@
-# Hermes Agent
-
 ## 一、整体架构
 
 ![hermes](../assets/hermes/source/hermes.png)
@@ -171,3 +169,6 @@ cron运行的机制：
 ### 3. 通知平台
 
 定时任务通过 deliver 指定投递目标，可以是原聊天（origin）、本地文件（local）、平台默认频道或具体聊天。消息平台创建任务时默认 origin，CLI 创建任务时默认 local。
+
+## 参考来源
+[Hermes Architecture EXPLAINED: Memory, Context & Gateways](https://www.youtube.com/watch?v=n32qq7Kwzh0)
