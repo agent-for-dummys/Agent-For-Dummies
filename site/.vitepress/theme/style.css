@@ -60,6 +60,76 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Subtle scrollbars with transparent tracks and lightly squared thumbs. */
+:root {
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: #d2e3ed;
+  --scrollbar-thumb-hover: #bfd8e6;
+  --scrollbar-thumb-active: #aecddb;
+}
+
+.dark {
+  --scrollbar-thumb: #a6a6a6;
+  --scrollbar-thumb-hover: #b8b8b8;
+  --scrollbar-thumb-active: #c4c4c4;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+/* Chromium uses the custom thumb below; Firefox uses the colors above. */
+@supports selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 4px;
+    background: var(--scrollbar-thumb);
+    background-clip: padding-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+    background-clip: padding-box;
+  }
+
+  ::-webkit-scrollbar-thumb:active {
+    background: var(--scrollbar-thumb-active);
+    background-clip: padding-box;
+  }
+
+  ::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: var(--scrollbar-track);
+  }
+}
+
+@media (forced-colors: active) {
+  * {
+    scrollbar-color: auto;
+  }
+}
+
 body {
   -webkit-font-smoothing: antialiased;
 }
