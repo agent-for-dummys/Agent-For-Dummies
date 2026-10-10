@@ -1,0 +1,59 @@
+/* Shared by the website and the Obsidian hessian-layout snippet. */
+.callout[data-callout="hessian"] {
+  position: relative;
+  box-sizing: border-box;
+  min-height: 170px;
+  padding: 0 0 0 180px;
+  margin: 28px 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-normal, var(--vp-c-text-1));
+}
+.callout[data-callout="hessian"] .callout-icon { display: none; }
+.callout[data-callout="hessian"] .callout-title {
+  margin: 0 0 12px;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+  font-weight: 700;
+  line-height: 1.6;
+}
+.callout[data-callout="hessian"] .callout-content {
+  padding: 0;
+  overflow: visible;
+  background: transparent;
+}
+.callout[data-callout="hessian"] .callout-content > p {
+  margin: 12px 0;
+}
+.callout[data-callout="hessian"] .callout-content > p:first-child {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 160px;
+  margin: 0;
+}
+.callout[data-callout="hessian"] .image-embed { display: block; }
+.callout[data-callout="hessian"] img {
+  display: block;
+  width: 160px;
+  max-width: 100%;
+  height: auto;
+  margin: 0;
+  border: 1px solid var(--background-modifier-border, var(--vp-c-divider));
+  border-radius: 12px;
+}
+.callout[data-callout="hessian"] mjx-container[display="true"] {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+@media (max-width: 520px) {
+  .callout[data-callout="hessian"] { padding-left: 0; }
+  .callout[data-callout="hessian"] .callout-content > p:first-child {
+    position: static;
+    margin: 12px 0;
+  }
+}

@@ -2,6 +2,8 @@ import { defineConfig } from 'vitepress';
 import { chapters, groups } from '../../scripts/catalog.mjs';
 import { syncContent, root } from '../../scripts/sync-content.mjs';
 import path from 'node:path';
+import { parenthesizedMath } from '../../scripts/parenthesized-math.mjs';
+import { hessianCallouts } from '../../scripts/hessian-callouts.mjs';
 
 const base = process.env.SITE_BASE || '/';
 
@@ -19,7 +21,11 @@ export default defineConfig({
   markdown: {
     math: true,
     image: { lazyLoading: true },
-    config(md) { md.set({ html: false }); }
+    config(md) {
+      md.set({ html: false });
+      md.use(parenthesizedMath);
+      md.use(hessianCallouts);
+    }
   },
   themeConfig: {
     logo: '/logo.png',
@@ -32,7 +38,8 @@ export default defineConfig({
       text: group.title,
       items: chapters.filter(chapter => group.ids.includes(chapter.id)).map(chapter => ({
         text: `${String(chapter.id).padStart(2, '0')}　${chapter.title}`,
-        link: chapter.link
+        link: chapter.link,
+        ...(chapter.children.length ? { items: chapter.children.map(note => ({ text: note.title, link: note.link })) } : {})
       }))
     })),
     outline: { level: [2, 3], label: '本页目录' },

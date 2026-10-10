@@ -1,7 +1,8 @@
 import { readdir, readFile, mkdir, writeFile, cp } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { chapters } from './catalog.mjs';
+import { createMarkdownRenderer } from 'vitepress';
+import { chapters, supplements } from './catalog.mjs';
 
 export const root = fileURLToPath(new URL('../', import.meta.url));
 const site = path.join(root, 'site');
@@ -14,18 +15,25 @@ async function writeChanged(file, content) {
   if (previous !== content) await writeFile(file, content);
 }
 
-function rewriteLinks(source, files) {
+function rewriteLinks(source, files, sourceFile, anchors) {
   return source.replace(/\]\(([^)]+)\)/g, (match, destination) => {
     if (/^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(destination.trim())) return match;
     let target;
     try { target = decodeURIComponent(destination); } catch { return match; }
-    if (/^(?:\.\.\/|\.\/)*assets\//.test(target)) return `](/${target.replace(/^(?:\.\.\/|\.\/)+/, '')})`;
-    if (target === 'README.md') return '](/)';
-    if (target === 'README_EN.md') return '](/en)';
-    if (target === 'LICENSE') return `](${repository}/blob/main/LICENSE)`;
     const [file, hash] = target.split('#');
-    const index = files.indexOf(path.basename(file));
-    if (index >= 0) return `](${chapters[index].link}${hash ? '#' + hash : ''})`;
+    const resolved = file ? path.resolve(path.dirname(path.join(root, sourceFile)), file) : path.join(root, sourceFile);
+    const relative = path.relative(root, resolved).split(path.sep).join('/');
+    const destinationHash = anchors.get(relative)?.get(hash) || hash;
+    const suffix = hash ? '#' + destinationHash : '';
+    if (!file) return `](${suffix})`;
+    if (relative.startsWith('assets/')) return `](/${encodeURI(relative)}${suffix})`;
+    if (relative === 'README.md') return '](/)';
+    if (relative === 'README_EN.md') return '](/en)';
+    if (relative === 'LICENSE') return `](${repository}/blob/main/LICENSE)`;
+    const supplement = supplements.find(note => note.source === relative);
+    if (supplement) return `](${supplement.link}${suffix})`;
+    const index = files.findIndex(name => relative === `docs/${name}`);
+    if (index >= 0) return `](${chapters[index].link}${suffix})`;
     return match;
   });
 }
@@ -106,14 +114,36 @@ function presentReadme(source, language) {
   return [introduction, ...sections].join('\n\n') + '\n';
 }
 
+// GitHub and VitePress assign different IDs to numbered/punctuated headings.
+// Resolve each source anchor against the website renderer before rewriting links.
+export function markdownHeadingSlug(title) {
+  return title.trim().toLowerCase().replace(/[^\p{L}\p{M}\p{N}\s_-]/gu, '').replace(/ /g, '-');
+}
+
 export async function syncContent() {
   const files = (await readdir(path.join(root, 'docs'))).filter(file => /^\d{2}.*\.md$/.test(file)).sort();
   if (files.length !== chapters.length || files.some((file, i) => Number(file.slice(0, 2)) !== chapters[i].id)) {
     throw new Error('Update scripts/catalog.mjs when adding or renumbering chapters.');
   }
+  const renderer = await createMarkdownRenderer(site);
+  const anchors = new Map();
+  for (const source of [...files.map(file => `docs/${file}`), ...supplements.map(note => note.source)]) {
+    const tokens = renderer.parse(await readFile(path.join(root, source), 'utf8'), {});
+    const slugs = new Map();
+    const counts = new Map();
+    for (let i = 0; i < tokens.length; i++) {
+      if (tokens[i].type !== 'heading_open') continue;
+      const title = tokens[i + 1].children.filter(token => token.type === 'text' || token.type === 'code_inline').map(token => token.content).join('');
+      const slug = markdownHeadingSlug(title);
+      const count = counts.get(slug) || 0;
+      counts.set(slug, count + 1);
+      slugs.set(count ? `${slug}-${count}` : slug, tokens[i].attrGet('id'));
+    }
+    anchors.set(source, slugs);
+  }
   for (const [i, chapter] of chapters.entries()) {
     const original = (await readFile(path.join(root, 'docs', files[i]), 'utf8')).replace(/\r\n/g, '\n');
-    const body = normalizeHeadings(rewriteLinks(original, files)).replace(/^\s*[-*_]{3,}\s*\n/, '').trim();
+    const body = normalizeHeadings(rewriteLinks(original.replace(/^# .+\n+/, ''), files, `docs/${files[i]}`, anchors)).replace(/^\s*[-*_]{3,}\s*\n/, '').trim();
     const meta = {
       title: chapter.title,
       description: `${chapter.group} · ${chapter.title}学习笔记`,
@@ -125,19 +155,32 @@ export async function syncContent() {
     };
     await writeChanged(path.join(site, 'notes', `${chapter.slug}.md`), `---\n${Object.entries(meta).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join('\n')}\n---\n\n# ${chapter.title}\n\n${body}\n`);
   }
+  for (const note of supplements) {
+    const original = (await readFile(path.join(root, note.source), 'utf8')).replace(/\r\n/g, '\n');
+    const body = normalizeHeadings(rewriteLinks(original.replace(/^# .+\n+/, ''), files, note.source, anchors)).trim();
+    const meta = {
+      title: note.title,
+      description: `模型基础 · ${note.title}`,
+      category: '模型基础',
+      source: note.source,
+      prev: { text: 'Transformer 基础', link: '/notes/transformer' },
+      next: false
+    };
+    await writeChanged(path.join(site, `${note.link.slice(1)}.md`), `---\n${Object.entries(meta).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join('\n')}\n---\n\n# ${note.title}\n\n${body}\n`);
+  }
   const homepage = (await readFile(path.join(root, 'HOMEPAGE.md'), 'utf8')).replace(/\r\n/g, '\n');
-  const homepageBody = rewriteLinks(prepareReadme(homepage), files);
+  const homepageBody = rewriteLinks(prepareReadme(homepage), files, 'HOMEPAGE.md', anchors);
   await writeChanged(
     path.join(site, 'index.md'),
     `---\ntitle: 首页\nsidebar: false\nsearch: false\npageClass: readme-page\nsource: HOMEPAGE.md\nprev: false\nnext: false\n---\n\n${homepageBody.trim()}\n`
   );
   const englishHomepage = (await readFile(path.join(root, 'HOMEPAGE_EN.md'), 'utf8')).replace(/\r\n/g, '\n');
-  const englishHomepageBody = rewriteLinks(prepareReadme(englishHomepage), files);
+  const englishHomepageBody = rewriteLinks(prepareReadme(englishHomepage), files, 'HOMEPAGE_EN.md', anchors);
   await writeChanged(
     path.join(site, 'en.md'),
     `---\ntitle: English\nsidebar: false\nsearch: false\npageClass: readme-page\nsource: HOMEPAGE_EN.md\nprev: false\nnext: false\n---\n\n${englishHomepageBody.trim()}\n`
   );
-  const catalog = `---\ntitle: 文档目录\nsidebar: false\nsearch: false\noutline: false\npageClass: catalog-page\nprev: false\nnext: false\n---\n\n# 文档目录\n\n` + (await import('./catalog.mjs')).groups.map(group => `## ${group.title}\n\n${chapters.filter(chapter => group.ids.includes(chapter.id)).map(chapter => `- [${String(chapter.id).padStart(2, '0')}　${chapter.title}](${chapter.link})`).join('\n')}`).join('\n\n');
+  const catalog = `---\ntitle: 文档目录\nsidebar: false\nsearch: false\noutline: false\npageClass: catalog-page\nprev: false\nnext: false\n---\n\n# 文档目录\n\n` + (await import('./catalog.mjs')).groups.map(group => `## ${group.title}\n\n${chapters.filter(chapter => group.ids.includes(chapter.id)).map(chapter => [`- [${String(chapter.id).padStart(2, '0')}　${chapter.title}](${chapter.link})`, ...chapter.children.map(note => `  - [${note.title}](${note.link})`)].join('\n')).join('\n')}`).join('\n\n');
   await writeChanged(path.join(site, 'catalog.md'), catalog);
   await mkdir(path.join(site, 'public'), { recursive: true });
   await cp(path.join(root, 'assets'), path.join(site, 'public', 'assets'), { recursive: true });

@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import '../../../assets/nlp/hessian/hessian-layout.css';
 
 :root {
   --vp-font-family-base: 'DM Sans', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
@@ -1028,6 +1029,13 @@ body {
 
 .readme-page .vp-doc table td:nth-child(3) {
   color: var(--vp-c-text-2);
+  font-size: 13px;
+}
+
+.readme-page .vp-doc table a[href$='/transformer/self-attention'],
+.readme-page .vp-doc table a[href$='/transformer/architecture'] {
+  display: inline-block;
+  margin-left: 16px;
   font-size: 13px;
 }
 

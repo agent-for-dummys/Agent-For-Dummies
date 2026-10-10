@@ -33,6 +33,13 @@ For backend or computer-science review, jump straight to `08` through `11`. No l
 | 11 | [Operating Systems and Networks](docs/11-操作系统、计网.md) | TCP/IP, HTTP, processes, threads, and coroutines. |
 | 12 | [VLM Evaluation](docs/12-VLM评测.md) | Multimodal and autonomous-driving evaluation metrics. |
 
+### Transformer Supplementary Notes
+
+- [04 · Transformer Fundamentals](docs/04-Transfomer基础.md)
+  - [Self-Attention](docs/transformer/Self-Attention.md)
+  - [Transformer](docs/transformer/transformer.md)
+- [15 · NLP Fundamentals](docs/15-NLP基础.md)
+
 ## How to Use These Notes
 
 - New to agents: start with `01`.

@@ -22,31 +22,25 @@
 
 ## 文档目录
 
-### Agent 应用
-
-- [01　Agent 基础与进阶](/notes/agent)
-- [02　Function Calling、MCP、Skills](/notes/tools)
-- [03　RAG](/notes/rag)
-- [13　harness](/notes/harness)
-- [14　Hermes Agent](/notes/hermes)
-
-### 模型基础
-
-- [04　Transformer 基础](/notes/transformer)
-- [05　模型微调](/notes/fine-tuning)
-- [06　常用 AI 概念](/notes/ai-concepts)
-- [07　常见大模型](/notes/models)
-- [08　机器学习](/notes/machine-learning)
-
-### 工程基础
-
-- [09　Elasticsearch](/notes/elasticsearch)
-- [10　全栈基础](/notes/full-stack)
-- [11　操作系统、计算机网络](/notes/systems-and-networks)
-
-### 多模态
-
-- [12　VLM 评测](/notes/vlm-evaluation)
+| 编号 | 笔记 | 主要内容 |
+| --- | --- | --- |
+| 01 | [Agent 基础与进阶](/notes/agent) | Agent 概念、架构、ReAct、工作流、多 Agent 与常见框架。 |
+| 02 | [Function Calling、MCP、Skills](/notes/tools) | 模型怎样调用工具，以及三者分别解决什么问题。 |
+| 03 | [RAG](/notes/rag) | 文档切分、向量检索、重排与 RAG 流程。 |
+| 04 | [Transformer 基础](/notes/transformer) | Attention、QKV、Encoder/Decoder 等基础。 |
+| ↳ | [Self-Attention](/notes/transformer/self-attention) | QKV、注意力权重、矩阵运算与多头注意力。 |
+| ↳ | [Transformer](/notes/transformer/architecture) | 编码器、解码器、位置编码、FFN 与训练。 |
+| 05 | [模型微调](/notes/fine-tuning) | 微调、LoRA、QLoRA、DPO。 |
+| 06 | [常用 AI 概念](/notes/ai-concepts) | 评估、Token、采样、Embedding 等高频概念。 |
+| 07 | [常见大模型](/notes/models) | LLM、VLM 与常见模型速览。 |
+| 08 | [机器学习](/notes/machine-learning) | 聚类、分类、回归、集成学习等。 |
+| 09 | [Elasticsearch](/notes/elasticsearch) | Elasticsearch、MySQL 与检索基础。 |
+| 10 | [全栈基础](/notes/full-stack) | Web、Redis、FastAPI 等常用知识。 |
+| 11 | [操作系统、计算机网络](/notes/systems-and-networks) | TCP/IP、HTTP、进程、线程、协程。 |
+| 12 | [VLM 评测](/notes/vlm-evaluation) | 多模态与自动驾驶相关评测指标。 |
+| 13 | [harness](/notes/harness) | Agent 运行环境、Harness Engineering 与长期任务管理。 |
+| 14 | [Hermes Agent](/notes/hermes) | Agent Loop、上下文、记忆、Gateway 与定时任务。 |
+| 15 | [NLP 基础](/notes/nlp) | 词向量、神经网络、RNN、机器翻译与预训练。 |
 
 [查看完整文档目录 →](/catalog)
 

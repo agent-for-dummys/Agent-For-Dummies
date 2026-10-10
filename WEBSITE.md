@@ -22,12 +22,14 @@ npm run preview
 
 构建结果位于 site/.vitepress/dist/ 。这是可以部署的静态网站。
 
+持续编辑笔记时使用 `npm run dev` 自动同步。`npm run preview` 用于查看静态构建；每次重新构建后需要重启预览服务，让它读取新的资源清单。
+
 ## 内容与样式
 
 - 修改文章：编辑 docs/ 中的原文件。
 - 修改中文首页：编辑 HOMEPAGE.md；修改英文首页：编辑 HOMEPAGE_EN.md。
 - 首页内容按 Markdown 原样生成，可在对应的首页文件中维护介绍、阅读入口和文档目录。
-- 首页兼容 GitHub 粘贴图片时生成的 `<img>` 标签：同步时转换为自适应的 Markdown 图片，并保留公网附件地址。代码块中的图片示例保持为代码。
+- 首页兼容 GitHub 粘贴图片时生成的 `<img>` 标签：同步时转换为自适应的 Markdown 图片；需要随项目分享的图片应先保存到 assets/ 并改为相对路径。代码块中的图片示例保持为代码。
 - 增加文章或调整分类：在 scripts/catalog.mjs 中补充编号、标题、分类和英文路由。
 - 修改排版与配色：编辑 site/.vitepress/theme/style.css。
 - 网站启动和构建时自动生成页面、修正文档图片路径和整理标题层级；原文件保持不变。
@@ -44,4 +46,15 @@ npm run preview
 
 默认仓库地址的基础路径为 /Agent-For-Dummies/ 。如果使用自定义域名，将工作流中的 SITE_BASE 改为 / 。
 
-此版本只新增网站源码与发布配置，没有修改原始笔记，也没有向 GitHub 推送或发布。
+文档、Transformer 下级目录与 NLP 阅读入口统一从源文件同步。修改后先在本地审阅，确认结果后提交并推送，以触发官网更新。
+
+## 图片与补充笔记
+
+- Markdown 图片使用相对于原文件的路径；分享时将 docs/ 与 assets/ 一起复制。不要使用电脑绝对路径、`/assets/` 根路径或 Obsidian 的 `![[图片]]` 嵌入语法。
+- NLP 配图位于 assets/nlp/source/，Hessian 示意图位于 assets/nlp/hessian/。
+- Transformer 的两篇补充笔记使用 assets/transformer/self-attention/ 与 assets/transformer/architecture/。
+- 根目录 README 的内容预览图保存在 assets/previews/，不再依赖 GitHub 附件。
+- 补充笔记的父章节、源文件与网站路由统一维护在 scripts/catalog.mjs 的 supplements 中，自动用于侧栏与完整目录。
+- 构建仅从项目内读取 Markdown 与 assets/；不再从 Typora 缓存或其他电脑路径临时复制图片。
+- 章节链接在源 Markdown 中使用标准标题锚点；同步脚本根据实际标题转换成 VitePress 的锚点，兼容编号与中文标点。
+- 运行 `npm run check:content` 检查源 Markdown 的图片路径、文件存在性及章节链接；构建前自动执行。

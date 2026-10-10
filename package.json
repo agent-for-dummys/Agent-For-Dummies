@@ -6,8 +6,9 @@
   "scripts": {
     "sync": "node scripts/sync-content.mjs",
     "dev": "npm run sync && vitepress dev site --host 127.0.0.1 --port 4173",
-    "build": "npm run sync && vitepress build site",
-    "preview": "vitepress preview site --host 127.0.0.1 --port 4173"
+    "build": "npm run check:content && npm run sync && vitepress build site",
+    "preview": "vitepress preview site --host 127.0.0.1 --port 4173",
+    "check:content": "node scripts/check-content.mjs"
   },
   "devDependencies": {
     "minisearch": "^7.2.0",

@@ -3,28 +3,28 @@
 准确率
 - TP：正确 
 - FP：错误
-![diagram](/assets/pasted-image-20251111192118.png)
+![diagram](../assets/pasted-image-20251111192118.png)
 
 ### Recall（Rk）
 被检测到的比例（召回率） ，即能看到多少，全不全
 - TP：检测正确 
 - FN 漏检（False Negative）
-![diagram](/assets/pasted-image-20251111192149.png)
+![diagram](../assets/pasted-image-20251111192149.png)
 ### F1@k Score
 精确率与召回率的调和平均，综合反映检测准确性；要求模型既要“看得准”（Precision 高）又要“看得全”（Recall 高）。
 - @k 含义：容忍的误差范围。k = 0.5/1.0/2.0/4.0 m 为正样本距离阈值。k越小越严格
 - eg：预测一辆车在 (10.0 m, 5.0 m)，而真实在 (10.6 m, 5.3 m)，对比预测距离和真实举例之间的距离是否在k之内
-![diagram](/assets/pasted-image-20251111192235.png)
+![diagram](../assets/pasted-image-20251111192235.png)
 ### F1 (Lane Detection)
 检测车道线的准确率。  看看模型画的线和真实车道线对不对齐。
-![diagram](/assets/pasted-image-20251111192754.png)
+![diagram](../assets/pasted-image-20251111192754.png)
 
 ## 语言理解指标(Captioning)
 ### Caption Accuracy / Hallucination Rate
 1. Caption Accuracy（描述准确率）
 2. Hallucination Rate（幻觉率）
 eg：
-![diagram](/assets/pasted-image-20251111194711.png)
+![diagram](../assets/pasted-image-20251111194711.png)
 
 ## 规划指标(Planning)
 衡量模型预测的行驶轨迹和真实轨迹差多远（→ L2 Error）以及模型会不会撞到别人（→ Collision Rate）。
@@ -32,7 +32,7 @@ eg：
 衡量模型预测轨迹与真实驾驶者轨迹的平均欧氏距离。
 L2 越小，说明车走得越接近真实路线，规划越准确
 - 平均欧氏距离：
-![diagram](/assets/pasted-image-20251111195644.png)
+![diagram](../assets/pasted-image-20251111195644.png)
 
 ### Collision Rate (%)（碰撞率）
 **Collision Rate** 就是统计模型规划的路线中，有多少帧（时刻）与别的车或行人“相交”了。 
@@ -257,18 +257,18 @@ Bench2Drive 是一个专门给端到端自动驾驶（E2E-AD）用的、**闭环
 - 拥有顶尖专家模型Think2Drive构建的官方训练数据集
 评估指标：
 	1. **Success Rate (SR)** 成功率 ，是否完成每条路线的驾驶目标。必须在规定时间内、遵守交通规则、到达目标点，否则视为失败。
-	![diagram](/assets/pasted-image-20251118091213.png)
+	![diagram](../assets/pasted-image-20251118091213.png)
 	2. **Driving Score (DS)** 驾驶评分，完成路线的比例 × 惩罚因子
-	![diagram](/assets/pasted-image-20251118091242.png)
+	![diagram](../assets/pasted-image-20251118091242.png)
 	3. **Efficiency**（ 效率，20 个 checkpoint，检测车辆速度是否过慢
-	![diagram](/assets/pasted-image-20251118091251.png)
-	![diagram](/assets/pasted-image-20251118091304.png)
+	![diagram](../assets/pasted-image-20251118091251.png)
+	![diagram](../assets/pasted-image-20251118091304.png)
 	4. **Comfort**（舒适性）用于评估车辆轨迹的 **加速度、横摆角速度、jerk 等行为是否符合“人类驾驶者的舒适范围”**。
 	帧变量平滑度FVS：
-	![diagram](/assets/pasted-image-20251118091313.png)
-	![diagram](/assets/pasted-image-20251118091445.png)
-	![diagram](/assets/pasted-image-20251118091457.png)
-	![diagram](/assets/pasted-image-20251118091507.png)
+	![diagram](../assets/pasted-image-20251118091313.png)
+	![diagram](../assets/pasted-image-20251118091445.png)
+	![diagram](../assets/pasted-image-20251118091457.png)
+	![diagram](../assets/pasted-image-20251118091507.png)
 	5. **Multi-Ability**（五大能力成功率）
 提供了一个大规模数据集，都是在CARLA v2环境里生成的
 
@@ -385,7 +385,7 @@ Corner-case QA（极端场景问答）
 	- 运动规划 / 轨迹预测（Motion Planning）
 		1. L2 Error（轨迹 L2 误差），预测的未来轨迹（waypoints）与 GT 轨迹之间的 L2 距离误差
 		 计算公式：对未来**每个点**计算距离误差 然后**对所有点求平均**
-		 ![diagram](/assets/pasted-image-20251123113324.png)
+		 ![diagram](../assets/pasted-image-20251123113324.png)
 		2. Final Displacement Error（FDE，最终点误差），只看最后一个点的位置，衡量整体是否偏航。
 
 ### LingoQA
@@ -404,7 +404,7 @@ OmniDrive是一个基于**反事实推理**的自动驾驶全局视觉-语言数
 1. Omni-Q：从三维感知角度设计VLMs
 2. Omni-L：增强VLMs三维整合能力
 eg:
-![diagram](/assets/pasted-image-20251126111411.png)
+![diagram](../assets/pasted-image-20251126111411.png)
 
 
 ### NuInstruct
