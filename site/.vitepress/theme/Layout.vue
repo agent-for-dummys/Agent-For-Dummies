@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import DefaultTheme from 'vitepress/theme';
 import DocumentSearch from './DocumentSearch.vue';
+import ReadingCard from './ReadingCard.vue';
 import { useData } from 'vitepress';
 import { nextTick, onMounted, onUnmounted, watch } from 'vue';
 
@@ -25,7 +26,7 @@ onMounted(() => {
     return true;
   };
   const sparkle = (x: number, y: number, burst = false, target: EventTarget | null = null) => {
-    if (motion.matches || document.hidden || stars.size >= 20) return;
+    if (motion.matches || document.hidden || stars.size >= 20 || document.documentElement.classList.contains('reading-card-active')) return;
     const star = document.createElement('span');
     star.className = 'pointer-sparkle';
     star.setAttribute('aria-hidden', 'true');
@@ -58,7 +59,7 @@ onMounted(() => {
     if (event.target instanceof HTMLDialogElement) { clearStars(); waves.forEach(wave => wave.remove()); waves.clear(); }
   };
   const onPointer = (event: PointerEvent) => {
-    if (motion.matches || event.button !== 0 || !(event.target instanceof Element)) return;
+    if (motion.matches || document.documentElement.classList.contains('reading-card-active') || event.button !== 0 || !(event.target instanceof Element)) return;
     if (!event.target.closest('a, button, summary')) return;
     const wave = document.createElement('span');
     wave.className = 'tap-wave';
@@ -98,7 +99,7 @@ onUnmounted(() => removeEffects());
 
 <template>
   <DefaultTheme.Layout>
-    <template #nav-bar-content-before><DocumentSearch /></template>
+    <template #nav-bar-content-before><DocumentSearch /><ReadingCard /></template>
     <template #doc-before>
       <div v-if="frontmatter.chapter" class="chapter-heading">
         <a :href="`${page.relativePath.startsWith('notes/') ? '../' : './'}catalog`">{{ frontmatter.category }}</a>
