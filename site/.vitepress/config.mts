@@ -4,6 +4,8 @@ import { syncContent, root } from '../../scripts/sync-content.mjs';
 import path from 'node:path';
 import { parenthesizedMath } from '../../scripts/parenthesized-math.mjs';
 import { hessianCallouts } from '../../scripts/hessian-callouts.mjs';
+import { imageWidths } from '../../scripts/image-widths.mjs';
+import { algorithmWalkthroughs } from '../../scripts/algorithm-walkthroughs.mjs';
 
 const base = process.env.SITE_BASE || '/';
 
@@ -25,6 +27,9 @@ export default defineConfig({
       md.set({ html: false });
       md.use(parenthesizedMath);
       md.use(hessianCallouts);
+      // Register last: this rule runs directly after inline parsing, before callouts.
+      md.use(imageWidths);
+      md.use(algorithmWalkthroughs);
     }
   },
   themeConfig: {

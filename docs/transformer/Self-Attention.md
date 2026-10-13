@@ -98,6 +98,9 @@ Self-Attention 可以多层叠加。后一层的输入的是前一层已经融�
 
 ## 4. Self-Attention 的运作
 
+::: algorithm attention
+:::
+
 本文中的$a^i,q^i,k^i,v^i,b^i$ 都是**列向量**，上标 $i$ 表示位置。$a^i$ 的维度为 $d_{\mathrm{model}}$，$q^i,k^i$ 的维度为 $d_k$，$v^i,b^i$ 的维度为 $d_v$。
 
 ![image-20261004150247993|476](../../assets/transformer/self-attention/image-20261004150247993.png)
@@ -255,6 +258,9 @@ $$
 多个头使用**不同的投影参数**，学习**不同的关注关系**，最后拼接各头输出，再做线性变换。
 
 每个头的关注内容是在训练中学习的，不是人为固定的“语法头”或“语义头”。
+
+::: algorithm multi-head
+:::
 
 ![image-20261004165219538](../../assets/transformer/self-attention/image-20261004165219538.png)
 

@@ -17,6 +17,7 @@ onMounted(() => {
   let lastPoint: { x: number; y: number } | null = null;
   const clearStars = () => { stars.forEach(star => star.remove()); stars.clear(); lastPoint = null; };
   const placeEffect = (element: HTMLElement, x: number, y: number, target: EventTarget | null) => {
+    if (target instanceof Element && target.closest('.algorithm-walkthrough')) return false;
     const layer = target instanceof Element ? target.closest('dialog[open]')?.querySelector<HTMLElement>('.notebook-search-effects') : null;
     const box = layer?.getBoundingClientRect();
     if (box && (x < box.left || x > box.right || y < box.top || y > box.bottom)) return false;
@@ -40,6 +41,7 @@ onMounted(() => {
   };
   const onMove = (event: PointerEvent) => {
     if (event.pointerType !== 'mouse' || !finePointer.matches || motion.matches) return;
+    if (event.target instanceof Element && event.target.closest('.algorithm-walkthrough')) { clearStars(); return; }
     const now = performance.now();
     if (now - lastSpawn < 65 || (lastPoint && Math.hypot(event.clientX - lastPoint.x, event.clientY - lastPoint.y) < 7)) return;
     lastSpawn = now;

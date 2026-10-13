@@ -4,6 +4,9 @@
 
 ### 1. 总体结构
 
+::: algorithm transformer
+:::
+
 本质：**输入一段序列，输出一段序列**。不知道要输出有多长，由机器自己决定输出的长度。
 
 采用 **Encoder-Decoder 架构**，在 **[《Attention Is All You Need》](https://arxiv.org/pdf/1706.03762.pdf)** 中，Encoder 层由 6 个 Encoder Layer 堆叠在一起，Decoder 层也由 6 个 Decoder Layer 堆叠在一起。
@@ -62,6 +65,8 @@
 
 
 ### 2. Encoder
+主要组成：多头注意力层、残差连接+归一化、FFN、残差连接+归一化
+![structure|444](../../assets/transformer/architecture/structure.png)
 
 一个 Transformer Encoder Layer（编码器层）可以理解为图中的一个Block，每个 Block 做 Self-attention，得到的 vector 会丢到 FFN 里面，得到 Block 的输出。而 Encoder 由多个这样的 Block 堆叠而成。
 
@@ -142,7 +147,7 @@ $$
 - **BatchNorm** 会“竖着”统计，比如对第一列 $x_{11},x_{21},x_{31}$ 算均值和方差。
 - **LayerNorm** 会“横着”统计，比如对第一行 $x_{11},x_{12},x_{13},x_{14}$ 算均值和方差。
 
-### 2.3 Residual Connection
+#### 2.3 Residual Connection
 
 Residual Connection（残差连接）的作用是**改善梯度传播**，可以理解为不让一层网络把原来的信息完全覆盖掉，而是把这一层的输出和原输入直接相加。
 $$
@@ -185,7 +190,7 @@ FFN层后也同理。
 
 
 
-### 2.4 Feed Forward Neural Network
+#### 2.4 Feed Forward Neural Network
 
 一个 token 经过 Self-Attention 后，已经融合了其他 token 的信息。接下来 FFN 要做的事情，就是**对这个 token 自己的表示进一步加工**。
 
@@ -209,7 +214,7 @@ FC（Fully Connected Layer） 是一个全连接层，FFN（前馈神经网络�
 ```
 
 
-#### 2.4.1 FC
+##### 2.4.1 FC
 
 **全连接层**，也常称为 Linear Layer，通过
 $$
@@ -234,7 +239,7 @@ $$
 
 ![FC|347](../../assets/transformer/architecture/FC.png)
 
-#### 2.4.2 FFN
+##### 2.4.2 FFN
 
 FFN 主要是将单个 token 内部的 feature 进行非线性变换，每个 token 都独立经过同一个 FFN。
 
@@ -273,6 +278,8 @@ $$ FFN(x)=xW'+b' $$
 
 
 ### 3. Decoder
+主要组成：多头掩码注意力层、残差连接+归一化、多头交叉注意力层、FFN、残差连接+归一化
+![structure|444](../../assets/transformer/architecture/structure.png)
 
 #### 3.1 Autoregressive
 
@@ -313,7 +320,6 @@ Transformer 模型里面涉及两种 mask：
 
 可以理解为：**Padding Mask 解决“哪些位置是无效的”；Sequence Mask 解决“哪些位置现在还不能看”**。
 
-
 ##### 3.3.1 Padding Mask
 
 一个 batch 里的句子长度通常不同，但为了组成矩阵，需要补成相同长度。例如：
@@ -332,6 +338,9 @@ Transformer 模型里面涉及两种 mask：
 
 `<PAD>` 本身只是为了让张量长度一致，**没有实际语义**。所以 Self-Attention 在计算时，不应该关注这些位置。
 
+::: algorithm padding
+:::
+
 Attention 原本计算：
 $$
  \text{Attention}(Q,K,V) = \text{softmax} \left( \frac{QK^T}{\sqrt{d_k}} \right)V 
@@ -349,6 +358,9 @@ $$
 主要用于 **Decoder 的 Masked Self-Attention**
 
 通俗地理解，就是**当前位置只能看自己以及左边已经出现的 token，不能看右边未来的 token**。
+
+::: algorithm mask
+:::
 
 ![image-20261007172010914|390](../../assets/transformer/architecture/image-20261007172010914.png)
 
@@ -432,7 +444,7 @@ Decoder 全部跑完之后，在结尾再添加一个全连接层和softmax层�
 
 比方说，聊天机器人里，用户说：你好，我是库洛洛，但是机器没有必要创造出库洛洛这个词，所以应该直接使用库洛洛这个词。
 
-![image-20261007175110951](../../assets/transformer/architecture/image-20261007175110951.png)
+![image-20261007175110951|480](../../assets/transformer/architecture/image-20261007175110951.png)
 
 **Summarization**
 
@@ -445,7 +457,7 @@ Decoder 全部跑完之后，在结尾再添加一个全连接层和softmax层�
 - Monotonic Attention
 - Location-aware attention
 
-![image-20261007175620875](../../assets/transformer/architecture/image-20261007175620875.png)
+![image-20261007175620875|520](../../assets/transformer/architecture/image-20261007175620875.png)
 
 
 
@@ -457,7 +469,7 @@ Decoder 全部跑完之后，在结尾再添加一个全连接层和softmax层�
 
 Beam Search则是：每一步不只保留概率最高的一个结果，而是保留得分最高的前 $k$ 条候选序列，再继续扩展。
 
-![image-20261007180217176](../../assets/transformer/architecture/image-20261007180217176.png)
+![image-20261007180217176|520](../../assets/transformer/architecture/image-20261007180217176.png)
 
 但是Beam Search不一定每次都有用。
 

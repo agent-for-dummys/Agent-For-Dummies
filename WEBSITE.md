@@ -50,6 +50,7 @@ npm run preview
 
 ## 图片与补充笔记
 
+- 图片可用 `![说明|420](相对路径)` 指定显示宽度，单位为像素；官网会去掉说明中的宽度标记，保持比例，并在窄屏上自动缩小。未指定宽度的图片沿用默认样式。解析规则在 scripts/image-widths.mjs 中。
 - Markdown 图片使用相对于原文件的路径；分享时将 docs/ 与 assets/ 一起复制。不要使用电脑绝对路径、`/assets/` 根路径或 Obsidian 的 `![[图片]]` 嵌入语法。
 - NLP 配图位于 assets/nlp/source/，Hessian 示意图位于 assets/nlp/hessian/。
 - Transformer 的两篇补充笔记使用 assets/transformer/self-attention/ 与 assets/transformer/architecture/。
@@ -58,3 +59,22 @@ npm run preview
 - 构建仅从项目内读取 Markdown 与 assets/；不再从 Typora 缓存或其他电脑路径临时复制图片。
 - 章节链接在源 Markdown 中使用标准标题锚点；同步脚本根据实际标题转换成 VitePress 的锚点，兼容编号与中文标点。
 - 运行 `npm run check:content` 检查源 Markdown 的图片路径、文件存在性及章节链接；构建前自动执行。
+
+## 算法交互图解
+
+Self-Attention 与 Transformer 补充笔记包含可翻页的 SVG 图解，支持切换 Query、上一步 / 下一步、播放 / 暂停、播放速度与重播本步。离开可见区域或切换页面时自动暂停；系统开启“减少动效”时关闭图内动画。
+
+Self-Attention 默认显示矩阵视图，也可以切换到关系图。矩阵按“结果 = 运算矩阵 × 输入”排列，各图解统一使用蓝、青绿和灰色，配色变量维护在 AlgorithmWalkthrough.vue 中。乘法依次高亮参与计算的行、列与元素，显示累加并填入结果格子；投影步骤可切换 Q / K / V。沿用正文的列向量约定：`S = KᵀQ` 的行对应 Key、列对应 Query，Softmax 按列归一化，最终用 `B = VA` 汇总。
+
+图解只保留一步一句说明，整块高度控制在 400px 内；左右翻页按钮固定在图形两侧，小屏幕在图内横向滑动。Sequence Mask 图固定并排显示 b¹ / b² / b³，与下方三个输入一一对齐；翻页只切换当前输出的连接和未来位置的遮挡状态，不播放数据流动动画。可点击输入或输出切词，也可自动翻页。Padding Mask 图分别展示不同句长、PAD 补齐、PAD 屏蔽，填入和遮挡使用短动画。两种图解分别插入原文的 3.3.1 Padding Mask 与 3.3.2 Sequence Mask 小节。图内不产生鼠标星光和点击涟漪。
+
+在源 Markdown 中用下面两行插入图解：
+
+```markdown
+::: algorithm attention
+:::
+```
+
+可用类型是 `attention`（注意力数值计算）、`multi-head`（多头拼接与投影）、`transformer`（Encoder–Decoder 流程）、`mask`（因果掩码的逐词连接）和 `padding`（PAD 补齐与屏蔽）。网站解析规则位于 scripts/algorithm-walkthroughs.mjs；组件和计算位于 site/.vitepress/theme/algorithms/。
+
+数值图解使用手工设定的二维向量和投影矩阵，权重与输出实时计算；模型结构及翻译词序列是教学示意，不调用真实模型。图解仅在网站上交互显示，普通 Markdown 阅读器仍可阅读原有文字、公式与配图。
