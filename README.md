@@ -27,7 +27,8 @@ npm run learn
 预览如下：
 <img width="2159" alt="preview_agent_roadmap" src="./assets/previews/preview_agent_roadmap.png" />
 <img width="2159" alt="preview_code1" src="./assets/previews/preview_code1.png" />
-<img width="2159" alt="preview_code2" src="./assets/previews/preview_code2.png" />
+<img width="1920" height="1020" alt="image" src="https://github.com/user-attachments/assets/cb06d616-8c45-4966-9db9-13f8fe2b4dc7" />
+
 
 ## 🌈阅读友好功能
 
