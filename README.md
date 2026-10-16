@@ -1,5 +1,5 @@
-# 🤖 Agent For Dummies | 学习笔记
-1️⃣在线阅读：https://agent-for-dummys.github.io/Agent-For-Dummies
+# 🤖 Agent For Dummies | Agent 基础入门编程平台➕学习笔记
+1️⃣Agent笔记在线阅读：https://agent-for-dummys.github.io/Agent-For-Dummies
 
 2️⃣也可以下载到本地自行编辑md文档对笔记进行补充完善。
 
@@ -46,7 +46,7 @@ npm run learn
 <img width="2159" alt="preview_2" src="./assets/previews/preview_3.png" />
 
 ## 说明
-这是agent/RAG/大模型学习 个人学习笔记，风格比较简洁精炼，图文结合，零基础/adhd友好，正在持续更新中。欢迎star追更！！！
+这是agent/RAG/大模型学习 个人学习笔记与Agent入门编程平台，风格比较简洁精炼，图文结合，零基础/adhd友好，正在持续更新中。欢迎star追更！！！
 欢迎通过 Issue 或 Pull Request 补充、纠错或提供更好懂的解释。
 
 笔记原创文字采用 [CC BY 4.0](LICENSE) 发布。
