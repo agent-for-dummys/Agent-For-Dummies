@@ -24,15 +24,13 @@ npm run learn
 
 首次安装需要联网下载依赖，之后只运行 `npm run learn` 即可同时启动网页和服务。
 
-预览如下：
-<img width="2159" alt="preview_agent_roadmap" src="./assets/previews/preview_agent_roadmap.png" />
-<img width="2159" alt="preview_code1" src="./assets/previews/preview_code1.png" />
-<img width="1868" height="838" alt="image" src="https://github.com/user-attachments/assets/0d13de82-e28b-4ff2-bbd5-0aa7d832240a" />
-
 题目列表示例：
+
 <img width="445" height="851" alt="image" src="https://github.com/user-attachments/assets/00c99b0b-5cb9-47e8-9faa-d24095baf523" />
 
-
+预览如下：
+<img width="2159" alt="preview_agent_roadmap" src="./assets/previews/preview_agent_roadmap.png" />
+<img width="1868" height="838" alt="image" src="https://github.com/user-attachments/assets/0d13de82-e28b-4ff2-bbd5-0aa7d832240a" />
 
 
 ## 🌈阅读友好功能
