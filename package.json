@@ -4,17 +4,26 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "setup": "node scripts/setup-oj.mjs",
+    "learn": "node scripts/start-learning.mjs",
+    "agent:demo": "node scripts/run-agent.mjs --demo",
+    "agent:run": "node scripts/run-agent.mjs",
     "sync": "node scripts/sync-content.mjs",
     "dev": "npm run sync && vitepress dev site --host 127.0.0.1 --port 4173",
     "build": "npm run check:content && npm run sync && vitepress build site",
     "preview": "vitepress preview site --host 127.0.0.1 --port 4173",
-    "check:content": "node scripts/check-content.mjs"
+    "check:content": "node scripts/check-content.mjs",
+    "oj:dev": "node scripts/start-oj.mjs",
+    "oj:test": "node scripts/test-oj.mjs"
   },
   "devDependencies": {
+    "@codemirror/lang-python": "^6.2.1",
+    "codemirror": "^6.0.2",
+    "markdown-it": "^14.3.1",
+    "markdown-it-mathjax3": "^4.3.2",
     "minisearch": "^7.2.0",
     "vitepress": "1.6.4",
-    "vue": "^3.5.13",
-    "markdown-it-mathjax3": "^4.3.2"
+    "vue": "^3.5.13"
   },
   "overrides": {
     "vite": "^6.4.3",

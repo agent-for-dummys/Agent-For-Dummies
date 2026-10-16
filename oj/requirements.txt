@@ -1,0 +1,11 @@
+fastapi==0.143.0
+uvicorn==0.54.0
+numpy>=2,<3
+langgraph==1.2.15
+langgraph-checkpoint-sqlite==3.1.2
+openai==2.54.0
+python-dotenv==1.2.4
+langchain[mcp]==1.4.6
+langchain-openai==1.7.2
+fastmcp==4.1.0
+httpx==0.28.1

@@ -22,6 +22,18 @@ npm run preview
 
 构建结果位于 site/.vitepress/dist/ 。这是可以部署的静态网站。
 
+## PyTorch 快速入门
+
+页面入口为 `/pytorch`，包含 40 个函数学习项、80 道函数练习、30 道综合题及 30 道变式，配有真实用例、标准答案和解析。首次运行 `npm run setup` 安装环境，之后运行 `npm run learn` 同时启动网页和本机 CPU 判题服务，并自动打开浏览器。详细说明见 [oj/README.md](oj/README.md)。
+
+官网保留函数学习、题目和题解，运行或提交时显示本地启动指南。读者下载或克隆仓库后，在自己电脑上练习，无需 GitHub 登录或云服务器。草稿、记录和布局保存在当前浏览器中，判题接口只接受本机请求。
+
+## Agent 从 0 到 1
+
+目录中可以切换 PyTorch 和 Agent。Agent 课程从《01-Agent基础与进阶》引入，前 16 节通过模型调用、提示模板、工具、ReAct、LangGraph 和 RAG 等短任务学习组件用法，后 12 节拆解 Pi 的关键函数并组装为可运行项目。教程包含代码示例和参数说明，任务页提供提示与可观察的完成结果，左右箭头用于切换任务，详见 [本地练习指南](oj/README.md)。
+
+最终项目从关卡函数组装，支持本地资料检索、引用、记忆、SQLite 恢复、工具确认、LangGraph、规划与协作。练习不需要密钥，真实模型从本机 `.env` 读取读者自己填写的配置。运行方式与项目导出说明见 [本地练习指南](oj/README.md)。
+
 持续编辑笔记时使用 `npm run dev` 自动同步。`npm run preview` 用于查看静态构建；每次重新构建后需要重启预览服务，让它读取新的资源清单。
 
 ## 内容与样式
@@ -44,7 +56,7 @@ npm run preview
 
 仓库中已加入 .github/workflows/pages.yml。将改动推送到 main 后，在仓库 Settings → Pages → Source 中选择 GitHub Actions。工作流会构建并发布。
 
-默认仓库地址的基础路径为 /Agent-For-Dummies/ 。如果使用自定义域名，将工作流中的 SITE_BASE 改为 / 。
+网站基础路径根据当前仓库名自动生成，因此 Fork 后可以在自己的 Pages 地址构建。如果使用自定义域名，将工作流中的 SITE_BASE 改为 / 。
 
 文档、Transformer 下级目录与 NLP 阅读入口统一从源文件同步。修改后先在本地审阅，确认结果后提交并推送，以触发官网更新。
 

@@ -1,0 +1,7 @@
+.agent-ide .agent-code{position:relative;margin:18px 0;border:1px solid var(--vp-c-divider);border-radius:7px;background:var(--vp-code-bg);overflow:hidden}
+.agent-ide .learning-content .agent-code pre{margin:0;padding:42px 16px 16px;border:0;border-radius:0;background:transparent;font:14px/1.85 var(--vp-font-family-mono);white-space:pre-wrap;overflow-wrap:anywhere;max-width:100%;tab-size:4}
+.agent-ide .learning-content .agent-code pre code{display:block;width:auto;min-width:0;max-width:100%;padding:0;border:0;background:transparent;color:var(--vp-c-text-1);font:inherit;white-space:pre-wrap;overflow-wrap:anywhere}
+.agent-ide .copy-code{position:absolute;right:10px;top:9px;display:flex;align-items:center;gap:5px;border:0;padding:3px 5px;border-radius:4px;background:transparent;color:var(--vp-c-text-2);font:12px/1.5 var(--vp-font-family-base);cursor:pointer}
+.agent-ide .copy-code:hover{color:var(--lab-blue)}.agent-ide .copy-code:focus-visible{outline:2px solid var(--lab-blue);outline-offset:2px}
+.agent-ide .copy-code svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+@media(max-width:600px){.agent-ide .learning-content .agent-code pre{font-size:12px;padding:40px 13px 13px}}

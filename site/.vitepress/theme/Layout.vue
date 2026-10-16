@@ -17,7 +17,7 @@ onMounted(() => {
   let lastPoint: { x: number; y: number } | null = null;
   const clearStars = () => { stars.forEach(star => star.remove()); stars.clear(); lastPoint = null; };
   const placeEffect = (element: HTMLElement, x: number, y: number, target: EventTarget | null) => {
-    if (target instanceof Element && target.closest('.algorithm-walkthrough')) return false;
+    if (target instanceof Element && target.closest('.algorithm-walkthrough, .pytorch-lab, .agent-ide, .agent-catalog, .mini-pi-map')) return false;
     const layer = target instanceof Element ? target.closest('dialog[open]')?.querySelector<HTMLElement>('.notebook-search-effects') : null;
     const box = layer?.getBoundingClientRect();
     if (box && (x < box.left || x > box.right || y < box.top || y > box.bottom)) return false;
@@ -41,7 +41,7 @@ onMounted(() => {
   };
   const onMove = (event: PointerEvent) => {
     if (event.pointerType !== 'mouse' || !finePointer.matches || motion.matches) return;
-    if (event.target instanceof Element && event.target.closest('.algorithm-walkthrough')) { clearStars(); return; }
+    if (event.target instanceof Element && event.target.closest('.algorithm-walkthrough, .pytorch-lab, .agent-ide, .agent-catalog, .mini-pi-map')) { clearStars(); return; }
     const now = performance.now();
     if (now - lastSpawn < 65 || (lastPoint && Math.hypot(event.clientX - lastPoint.x, event.clientY - lastPoint.y) < 7)) return;
     lastSpawn = now;
@@ -80,10 +80,6 @@ onMounted(() => {
   const stop = watch(() => page.value.relativePath, async () => {
     clearStars();
     await nextTick();
-    if (!motion.matches) document.querySelector('.VPDoc .content')?.animate(
-      [{ opacity: .65, transform: 'translateY(5px)' }, { opacity: 1, transform: 'translateY(0)' }],
-      { duration: 210, easing: 'ease-out' }
-    );
   });
   removeEffects = () => {
     document.removeEventListener('pointerdown', onPointer);
