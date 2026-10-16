@@ -6,8 +6,6 @@ import { parenthesizedMath } from '../../scripts/parenthesized-math.mjs';
 import { hessianCallouts } from '../../scripts/hessian-callouts.mjs';
 import { imageWidths } from '../../scripts/image-widths.mjs';
 import { algorithmWalkthroughs } from '../../scripts/algorithm-walkthroughs.mjs';
-import { pytorchLab } from '../../scripts/pytorch-lab.mjs';
-import { pytorchContent } from '../../scripts/pytorch-content.mjs';
 
 const base = process.env.SITE_BASE || '/';
 
@@ -32,7 +30,6 @@ export default defineConfig({
       // Register last: this rule runs directly after inline parsing, before callouts.
       md.use(imageWidths);
       md.use(algorithmWalkthroughs);
-      md.use(pytorchLab);
     }
   },
   themeConfig: {
@@ -40,8 +37,7 @@ export default defineConfig({
     siteTitle: 'Agent For Dummies',
     nav: [
       { text: '首页', link: '/' },
-      { text: '文档目录', link: '/catalog' },
-      { text: '编程实战', link: '/practice' }
+      { text: '文档目录', link: '/catalog' }
     ],
     sidebar: groups.map(group => ({
       text: group.title,
@@ -104,16 +100,9 @@ export default defineConfig({
     }
   },
   vite: {
-    server: { host: '127.0.0.1', port: 4173, strictPort: true, headers: { 'X-Agent-For-Dummies': 'local' } },
-    envDir: root,
-    plugins: [pytorchContent(root), {
+    plugins: [{
       name: 'sync-repository-notes',
       configureServer(server) {
-        server.middlewares.use('/__local-learning', (_request, response) => {
-          response.setHeader('Content-Type', 'application/json');
-          response.setHeader('Cache-Control', 'no-store');
-          response.end(JSON.stringify({ service: 'agent-for-dummies-site' }));
-        });
         const sources = ['HOMEPAGE.md', 'HOMEPAGE_EN.md', 'docs', 'assets'].map(file => path.join(root, file));
         server.watcher.add(sources);
         let pending = Promise.resolve();
