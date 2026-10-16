@@ -3,7 +3,40 @@
 
 2️⃣也可以下载到本地自行编辑md文档对笔记进行补充完善。
 
-## 预览
+
+## 【速览】——10月新增
+
+- Hermes/Harness/Transformer/NLP基础/全栈基础 相关学习笔记文档（持续更新）
+- PyTorch 与 Agent 从 0 到 1 快速入门编程平台（持续更新）
+- 阅读友好功能
+
+
+## 【💡新增！！⌨️持续更新中】PyTorch 与 Agent 从 0 到 1 快速入门
+
+这是一个帮助初学者快速学习并上手 PyTorch 和 Agent 的基本函数入门编程平台，旨在帮助所有一下子看不懂整个项目 or 长代码的朋友快速了解并熟悉常用代码。
+
+由于预算有限，请有需要的朋友们下载或者克隆源码到自己电脑里（欢迎大家 fork 并通过 Issue 或 Pull Request 补充、纠错٩(ˊᗜˋ*)و），需要安装 Node.js 22 或更新版本，以及 Python 3.12～3.14。在项目目录执行：
+
+```sh
+npm run setup
+npm run learn
+```
+
+首次安装需要联网下载依赖，之后只运行 `npm run learn` 即可同时启动网页和服务。
+
+预览如下：
+<img width="2159" alt="preview_agent_roadmap" src="./assets/previews/preview_agent_roadmap.png" />
+<img width="2159" alt="preview_code1" src="./assets/previews/preview_code1.png" />
+<img width="2159" alt="preview_code2" src="./assets/previews/preview_code2.png" />
+
+## 🌈阅读友好功能
+
+新增ADHD阅读友好功能，预览如下：
+<img width="2159" alt="preview_readingcard1" src="./assets/previews/preview_readingcard1.png" />
+<img width="2159" alt="preview_readingcard2" src="./assets/previews/preview_readingcard2.png" />
+
+
+## 📋笔记文档预览
 笔记目录：
 <img width="2159" alt="preview_1" src="./assets/previews/preview_0.png" />
 

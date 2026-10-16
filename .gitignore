@@ -19,3 +19,9 @@ site/en.md
 site/catalog.md
 site/public/assets/
 /work/
+/.venv-oj/
+__pycache__/
+*.pyc
+.agent-data/
+.agent-workspaces/
+.mini-pi/

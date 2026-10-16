@@ -4,6 +4,8 @@
 
 [开始阅读：Agent 基础与进阶](/notes/agent)　·　[浏览完整文档目录](/catalog)　·　[GitHub 仓库](https://github.com/agent-for-dummys/Agent-For-Dummies)
 
+[编程实战：PyTorch 与 Agent 从 0 到 1 →](/practice)
+
 ## 关于本站
 
 这里整理了个人学习过程中积累的笔记，内容覆盖 Agent 应用、大模型原理、机器学习、408八股。
