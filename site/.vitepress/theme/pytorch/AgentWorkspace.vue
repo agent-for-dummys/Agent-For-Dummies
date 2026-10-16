@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import {computed,onMounted,onUnmounted,onActivated,onDeactivated,ref,nextTick} from 'vue';
+import {computed,onMounted,onUnmounted,onActivated,onDeactivated,ref,nextTick,watch} from 'vue';
 import course from '../../../../oj/agent_course.json';
 import rendered from 'virtual:agent-content';
 import PythonEditor from './PythonEditor.vue';
-import AgentRoadmap from './AgentRoadmap.vue';
 import ProjectTree from './ProjectTree.vue';
-import AgentCatalog from './AgentCatalog.vue';
+import type {NavigationState} from './course-navigation';
 import LocalStartGuide from './LocalStartGuide.vue';
 import AgentHistory from './AgentHistory.vue';
 import AgentRunPanel from './AgentRunPanel.vue';
@@ -13,14 +12,14 @@ import AgentTask from './AgentTask.vue';
 import {request,exportAgentProject,isLocalSite,ApiError} from './api';
 import './fonts.css';
 import './agent-code.css';
-const emit=defineEmits<{'switch-course':[track:'pytorch'|'agent']}>();
+const emit=defineEmits<{navigation:[state:NavigationState]}>();
 const chapters=course.chapters;const selected=ref(chapters[0].id),tab=ref('learn');
 const current=computed(()=>chapters.find(ch=>ch.id===selected.value)!);
 const chapterIndex=computed(()=>chapters.findIndex(ch=>ch.id===selected.value));
 const expandedFolders=ref<string[]>(['practice','mini_pi']),waiting=ref<any>();
 const chapterResults=ref<Record<string,any>>({}),chapterEvents=ref<Record<string,any[]>>({});
 const files=ref<Record<string,string>>({...course.files});const filename=ref(chapters[0].file),dirty=ref<string[]>([]),saving=ref(false),connected=ref(false),message=ref('');
-const chapterOpen=ref(false),mapOpen=ref(false),filesOpen=ref(false),active=ref(true),setupOpen=ref(false);
+const filesOpen=ref(false),active=ref(true),setupOpen=ref(false);
 const completed=ref<string[]>([]),records=ref<any[]>([]),result=ref<any>(),events=ref<any[]>([]),busy=ref(false),status=ref(''),threadId=ref('main');
 const inputDrafts=ref<Record<string,string>>({});
 const question=computed({
@@ -34,9 +33,8 @@ const isSubmission=(record:any)=>record.mode==='check'&&record.chapterId!=='intr
 const relevantRecords=computed(()=>records.value.filter(record=>isSubmission(record)&&record.chapterId===selected.value));
 const splitter=ref<HTMLElement>(),split=ref(.5),splitStart=ref<{x:number;ratio:number}>();
 const learningScroll=ref<HTMLElement>();
-const lessonTitle=ref<HTMLElement>(),routeTop=ref(190);
-let routeObserver:ResizeObserver|undefined;
-function alignRouteBookmark(){const bounds=lessonTitle.value?.getBoundingClientRect();if(bounds)routeTop.value=bounds.top+bounds.height/2+(learningScroll.value?.scrollTop||0);}
+watch([selected,completed],()=>{if(active.value)emit('navigation',{selected:selected.value,completed:[...completed.value]});},{deep:true});
+defineExpose({selectTarget:selectChapter});
 let saveChain:Promise<boolean>=Promise.resolve(true);
 const saveTimers=new Map<string,ReturnType<typeof setTimeout>>();
 function scheduleSave(name:string){const pending=saveTimers.get(name);if(pending)clearTimeout(pending);saveTimers.set(name,setTimeout(()=>{saveTimers.delete(name);if(local)save(name);},700));}
@@ -61,7 +59,7 @@ async function save(name=filename.value){
 }
 async function saveAll(){for(const name of [...dirty.value])if(!await save(name))return false;return true;}
 async function openFile(name:string){if(!await save())return;filename.value=name;revealFile(name);localStorage.setItem('agent-course-v3-file',name);}
-async function selectChapter(id:string){if(!await save())return;selected.value=id;filename.value=current.value.file;nextTick(()=>learningScroll.value?.scrollTo({top:0}));revealFile(filename.value);tab.value='learn';panelTab.value='cases';runExpanded.value=false;chapterOpen.value=false;mapOpen.value=false;localStorage.setItem('agent-course-v3-chapter',id);localStorage.setItem('agent-course-v3-file',filename.value);result.value=chapterResults.value[id]||(id==='project'?waiting.value:undefined);events.value=chapterEvents.value[id]||[];}
+async function selectChapter(id:string){if(!chapters.some(ch=>ch.id===id)||!await save())return false;selected.value=id;filename.value=current.value.file;nextTick(()=>learningScroll.value?.scrollTo({top:0}));revealFile(filename.value);tab.value='learn';panelTab.value='cases';runExpanded.value=false;localStorage.setItem('agent-course-v3-chapter',id);localStorage.setItem('agent-course-v3-file',filename.value);result.value=chapterResults.value[id]||(id==='project'?waiting.value:undefined);events.value=chapterEvents.value[id]||[];return true;}
 function navigate(delta:number){const next=chapters[chapterIndex.value+delta];if(next)selectChapter(next.id);}
 function editTask(){openFile(current.value.file);tab.value='task';}
 async function copyLessonCode(event:MouseEvent){
@@ -108,11 +106,9 @@ function resizeDown(event:PointerEvent){resizeStart.value={y:event.clientY,heigh
 function resizeMove(event:PointerEvent){if(resizeStart.value)bottomHeight.value=Math.min((codePane.value?.clientHeight||700)-160,Math.max(42,resizeStart.value.height+resizeStart.value.y-event.clientY));}
 function resizeEnd(){resizeStart.value=undefined;}
 function splitMove(event:PointerEvent){if(splitStart.value)split.value=Math.min(.7,Math.max(.25,splitStart.value.ratio+(event.clientX-splitStart.value.x)/(splitter.value?.clientWidth||1000)));}
-function keyboard(event:KeyboardEvent){if(!active.value)return;if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='s'){event.preventDefault();save();}if(event.key==='Escape'){mapOpen.value=false;chapterOpen.value=false;}}
+function keyboard(event:KeyboardEvent){if(!active.value)return;if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='s'){event.preventDefault();save();}}
 function beforeUnload(event:BeforeUnloadEvent){if(dirty.value.length){event.preventDefault();event.returnValue='';}}
 onMounted(async()=>{
- alignRouteBookmark();routeObserver=new ResizeObserver(alignRouteBookmark);if(lessonTitle.value)routeObserver.observe(lessonTitle.value);
- window.addEventListener('resize',alignRouteBookmark);window.addEventListener('scroll',alignRouteBookmark,true);
  const saved=localStorage.getItem('agent-course-v3-chapter');if(chapters.some(ch=>ch.id===saved)){selected.value=saved!;filename.value=current.value.file;}
  try{const savedInputs=JSON.parse(localStorage.getItem('agent-course-v3-inputs')||'{}');if(savedInputs&&typeof savedInputs==='object'&&!Array.isArray(savedInputs))inputDrafts.value=Object.fromEntries(chapters.filter(ch=>typeof savedInputs[ch.id]==='string'&&savedInputs[ch.id].length<=4000).map(ch=>[ch.id,savedInputs[ch.id]]));}catch{}
  const savedFile=localStorage.getItem('agent-course-v3-file');if(savedFile&&savedFile in course.files)filename.value=savedFile;revealFile(filename.value);
@@ -120,26 +116,22 @@ onMounted(async()=>{
  window.addEventListener('keydown',keyboard);window.addEventListener('beforeunload',beforeUnload);await loadFiles();
  const pending=localStorage.getItem('agent-course-v3-pending');if(pending&&local){try{const job=JSON.parse(pending);runQuestions.value[job.chapterId]=job.question??inputDrafts.value[job.chapterId]??chapters.find(ch=>ch.id===job.chapterId)?.question??'';panelTab.value='result';busy.value=true;jobId=job.id;runController=new AbortController();await poll(job.id,job.chapterId,job.mode,runController.signal,job.threadId);}catch(error){message.value=(error as Error).message;}finally{busy.value=false;}}
 });
-onActivated(()=>{active.value=true;nextTick(alignRouteBookmark);});onDeactivated(()=>{active.value=false;mapOpen.value=false;chapterOpen.value=false;saveAll();});
-onUnmounted(()=>{routeObserver?.disconnect();window.removeEventListener('resize',alignRouteBookmark);window.removeEventListener('scroll',alignRouteBookmark,true);window.removeEventListener('keydown',keyboard);window.removeEventListener('beforeunload',beforeUnload);runController?.abort();for(const timer of saveTimers.values())clearTimeout(timer);});
+onActivated(()=>{active.value=true;emit('navigation',{selected:selected.value,completed:[...completed.value]});});onDeactivated(()=>{active.value=false;saveAll();});
+onUnmounted(()=>{window.removeEventListener('keydown',keyboard);window.removeEventListener('beforeunload',beforeUnload);runController?.abort();for(const timer of saveTimers.values())clearTimeout(timer);});
 </script>
 <template>
  <div class="agent-ide">
   <LocalStartGuide :open="setupOpen" @close="setupOpen=false"/>
-  <AgentCatalog :open="chapterOpen&&active" :course="course" :selected="selected" :completed="completed" @close="chapterOpen=false" @select="selectChapter" @switch="chapterOpen=false;emit('switch-course',$event)"/>
-  <AgentRoadmap v-if="mapOpen&&active" :course="course" :completed="completed" :bookmark-top="routeTop" @close="mapOpen=false" @select="selectChapter"/>
-  <button v-if="!mapOpen" type="button" class="route-bookmark" :style="{top:routeTop+'px'}" aria-label="展开路线图" title="路线图" @click="mapOpen=true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2V5Zm6-2v16m6-14v16"/></svg></button>
   <div ref="splitter" class="agent-panels" :style="{'--lesson-share':split+'fr','--editor-share':(1-split)+'fr'}">
    <section class="learning-pane">
     <header class="learning-tabs">
-     <button type="button" class="catalog-toggle" aria-label="展开题目列表" @click="chapterOpen=true"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="2.5" y="3" width="15" height="14" rx="2" stroke="currentColor"/><path d="M7 3v14M10 7h4M10 10h4M10 13h4" stroke="currentColor"/></svg></button>
      <button type="button" :class="{active:tab==='learn'}" @click="tab='learn'">学习</button>
      <button type="button" :class="{active:tab==='task'}" @click="tab='task'">任务</button>
      <button type="button" :class="{active:tab==='records'}" @click="tab='records'">提交记录</button>
      <nav class="task-arrows" aria-label="切换任务"><button type="button" aria-label="上一任务" :disabled="chapterIndex===0" @click="navigate(-1)">‹</button><span>{{chapterIndex+1}} / {{chapters.length}}</span><button type="button" aria-label="下一任务" :disabled="chapterIndex===chapters.length-1" @click="navigate(1)">›</button></nav>
     </header>
     <article ref="learningScroll" class="learning-content">
-     <h1 ref="lessonTitle">{{current.title}}</h1>
+     <h1>{{current.title}}</h1>
      <div v-if="tab==='learn'" class="lesson-prose" @click="copyLessonCode" v-html="rendered[current.id].lesson"/>
      <AgentTask v-else-if="tab==='task'" :key="current.id" :chapter="current"/>
      <AgentHistory v-else :key="selected" :records="relevantRecords"/>
@@ -180,7 +172,6 @@ onUnmounted(()=>{routeObserver?.disconnect();window.removeEventListener('resize'
 .learning-tabs,.editor-toolbar{display:flex;align-items:center;gap:5px;min-height:48px;padding:6px 10px;border-bottom:1px solid var(--vp-c-divider);flex:none}
 .learning-tabs>button{padding:5px 8px;border:0;border-radius:5px;font-size:14px;font-weight:500;color:var(--vp-c-text-2);white-space:nowrap}
 .learning-tabs>button.active{color:var(--lab-blue);background:var(--lab-blue-soft)}
-.learning-tabs .catalog-toggle{display:flex;align-items:center;justify-content:center;width:24px;height:28px;padding:0;margin-left:-5px}
 .task-arrows{display:flex;align-items:center;gap:6px;margin-left:auto;color:var(--vp-c-text-3);font:11px var(--vp-font-family-mono)}
 .task-arrows button{font-size:22px;color:var(--lab-blue);width:22px}.task-arrows button:disabled{opacity:.3}
 .learning-content{overflow:auto;flex:1;padding:28px 30px;line-height:1.95;min-height:0}
@@ -200,7 +191,6 @@ onUnmounted(()=>{routeObserver?.disconnect();window.removeEventListener('resize'
 .editor-body{display:flex;flex:1;min-height:0;position:relative}.file-explorer{flex:none;width:170px;overflow:auto;background:var(--vp-code-bg);padding:10px 6px;border-right:1px solid var(--vp-c-divider)}.code-surface{flex:1;min-width:0;min-height:0}.code-surface :deep(.cm-gutters){background:var(--vp-c-bg)}
 .output-divider{height:8px;flex:none;display:flex;align-items:center;justify-content:center;cursor:row-resize;touch-action:none}.output-divider i{width:32px;height:2px;background:var(--vp-c-border);border-radius:2px}
 .dark .agent-ide{--lab-red:#f18b96;--lab-red-soft:#3c282e}
-.route-bookmark{position:fixed;left:0;z-index:29;display:grid;place-items:center;width:30px;height:36px;transform:translateY(-50%);padding:0;border:1px solid var(--vp-c-divider);border-left:0;border-radius:0 6px 6px 0;background:var(--vp-c-bg);color:var(--lab-blue);cursor:pointer}.route-bookmark svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}.route-bookmark:hover{background:var(--vp-c-default-soft)}
 .agent-ide :deep(*){scrollbar-color:#d0d3d6 transparent;scrollbar-width:thin}.agent-ide :deep(*::-webkit-scrollbar){width:6px;height:6px}.agent-ide :deep(*::-webkit-scrollbar-thumb){background:#d0d3d6;border-radius:6px}.agent-ide :deep(*::-webkit-scrollbar-track){background:transparent}
 @media(max-width:850px){.learning-content{padding:23px}.file-explorer{position:absolute;inset:0 auto 0 0;z-index:5;width:190px;box-shadow:4px 0 15px #00000012}.learning-tabs>button{font-size:12px}}
 @media(max-width:600px){.agent-ide{height:auto;min-height:0}.agent-panels{display:flex;flex-direction:column;gap:10px}.learning-pane{height:65dvh;min-height:400px}.coding-pane{height:75dvh;min-height:550px}.column-divider{display:none}.learning-content{padding:22px}.learning-content h1{font-size:23px}.learning-content :deep(pre){padding:13px;font-size:12px}}

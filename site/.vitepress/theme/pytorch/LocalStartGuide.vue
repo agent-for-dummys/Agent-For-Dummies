@@ -7,12 +7,12 @@ watch(()=>props.open,async value=>{await nextTick();if(value&&!dialog.value?.ope
 </script>
 <template>
  <dialog ref="dialog" class="local-start-guide" aria-labelledby="local-guide-title" @cancel="emit('close')" @close="emit('close')" @click="($event.target===dialog)&&emit('close')">
-  <header><h2 id="local-guide-title">在本机练习</h2><button type="button" aria-label="关闭启动指南" @click="emit('close')">×</button></header>
-  <p>安装 Node.js 22 或更新版本，以及 Python 3.12～3.14。下载或克隆项目后，在项目目录中打开终端。</p>
-  <a href="https://github.com/agent-for-dummys/Agent-For-Dummies" target="_blank" rel="noopener noreferrer">获取项目 ↗</a>
-  <h3>首次安装</h3><pre>npm run setup</pre><p>安装网页、CPU 版 PyTorch 与 Agent 课程环境。</p>
-  <h3>开始练习</h3><pre>npm run learn</pre><p>网页和判题服务会一起启动，浏览器自动打开练习页面。运行时保留终端窗口，按 Ctrl+C 结束服务。</p>
-  <a href="http://127.0.0.1:4173/practice" target="_blank" rel="noopener noreferrer">打开本地练习页面 ↗</a>
+  <header><h2 id="local-guide-title">友情提示</h2><button type="button" aria-label="关闭友情提示" @click="emit('close')">×</button></header>
+  <p>需要拉取源码，在自己电脑上安装 Node.js 22 或更新版本，以及 Python 3.12～3.14。下载或克隆项目后，在项目目录中打开终端。</p>
+  <a href="https://github.com/agent-for-dummys/Agent-For-Dummies" target="_blank" rel="noopener noreferrer"><strong>获取项目 ↗</strong></a>
+  <h3>首次安装</h3><pre>npm run setup</pre><p>安装项目环境。</p>
+  <h3>开始练习</h3><pre>npm run learn</pre><p>浏览器会自动打开练习页面。运行时记得不要关闭运行中的终端窗口，按 Ctrl+C 可以结束服务。</p>
+  <a href="http://127.0.0.1:4173/practice" target="_blank" rel="noopener noreferrer"><strong>打开本地练习页面 ↗</strong></a>
  </dialog>
 </template>
 <style scoped>

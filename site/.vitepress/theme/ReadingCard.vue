@@ -246,13 +246,13 @@ onUnmounted(() => {
         <span>归位</span>
       </button>
     </div>
-  <button class="reading-card-toggle" :class="{ 'is-active': enabled }" type="button" :aria-pressed="enabled" aria-label="ADHD 阅读模式" title="开启或关闭彩色阅读卡" @click="toggle">
+  <button class="reading-card-toggle" :class="{ 'is-active': enabled }" type="button" :aria-pressed="enabled" aria-label="辅助阅读" title="开启或关闭彩色阅读卡" @click="toggle">
     <svg width="20" height="18" viewBox="0 0 20 18" fill="none" aria-hidden="true">
       <rect x="1" y="2" width="18" height="14" rx="3" stroke="currentColor" />
       <path d="M3 5h5v3H3z" fill="#9dcc63" /><path d="M8 5h9v3H8z" fill="#9fc2e5" />
       <path d="M3 10h8v3H3z" fill="#d6b1de" /><path d="M11 10h6v3h-6z" fill="#e8c86e" />
     </svg>
-    <span>ADHD 阅读</span>
+    <span>辅助阅读</span>
   </button>
   </div>
   <Teleport v-if="mounted" to="body">

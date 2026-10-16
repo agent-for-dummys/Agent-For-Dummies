@@ -13,6 +13,7 @@ import './fonts.css';
 import { pythonValue, inputText as formatInput, outputText as formatOutput } from './format';
 import { health, judge, pollJob, isLocalSite, type Health, type JudgeResult } from './api';
 import LocalStartGuide from './LocalStartGuide.vue';
+import type {NavigationState} from './course-navigation';
 
 type View = 'lesson' | 'problem' | 'solution' | 'history';
 type Level = '入门' | '简单' | '中等' | '困难';
@@ -26,7 +27,7 @@ interface Problem {
 }
 interface Submission { id?:string;problemId:string; verdict:string; passed:number; total:number; at:number; code?:string; result?:JudgeResult }
 const props=defineProps<{track:'pytorch'|'agent';course:any}>();
-const emit=defineEmits<{'switch-course':[track:'pytorch'|'agent']}>();
+const emit=defineEmits<{navigation:[state:NavigationState]}>();
 const course=props.course as {version:number;title?:string;modules:Module[];problems:Problem[]};
 const track=props.track;
 const storageKey='pytorch-course-v1';
@@ -35,10 +36,7 @@ const practiceId=ref<string>();
 const learningScroll=ref<HTMLElement>();
 const scrollToStart=()=>nextTick(()=>learningScroll.value?.scrollTo({top:0}));
 const activeModule=ref(course.modules[0].id), problemId=ref(course.problems[0].id), lessonIndex=ref(0), view=ref<View>('lesson');
-const search=ref(''), drafts=ref<Record<string,string>>({}), solved=ref<string[]>([]), history=ref<Submission[]>([]);
-const railOpen=ref(false), expandedGroups=ref<string[]>([course.modules[0].id]);
-const railDialog=ref<HTMLDialogElement>(),labGrid=ref<HTMLElement>();
-const railPosition=ref<Record<string,string>>({});
+const drafts=ref<Record<string,string>>({}), solved=ref<string[]>([]), history=ref<Submission[]>([]);
 const selectedRecord=ref<number>(), resultCode=ref<Record<string,string>>({}), results=ref<Record<string,JudgeResult>>({});
 const connection=ref<Health>(), connectionError=ref(''), checking=ref(false), busy=ref(false), jobStatus=ref(''), activeJobKey=ref('');
 const activeJobCode=ref('');
@@ -56,20 +54,6 @@ const panelCollapsed=ref(false),runHeaderHeight=ref(46);
 const expandedPane=ref<'learning'|'editor'|'tests'|null>(null),splitRatio=ref(.5),workArea=ref<HTMLElement>(),workWidth=ref(0),columnResizing=ref(false);
 const hiddenSide=ref<'learning'|'coding'|null>(null),collapseTarget=ref<'learning'|'coding'|null>(null),columnHandle=ref<HTMLElement>();
 const activeHiddenSide=computed(()=>expandedPane.value?null:hiddenSide.value);
-function positionRail(){
- railPosition.value={top:'0px',left:'0px',width:`${Math.min(360,window.innerWidth*.9)}px`,height:`${window.innerHeight}px`};
-}
-function closeRail(){railDialog.value?.close();railOpen.value=false;}
-function toggleRail(){
- if(railOpen.value){closeRail();return;}
- positionRail();railDialog.value?.showModal();railOpen.value=true;
-}
-function railBackdropClick(event:MouseEvent){
- if(event.target!==railDialog.value)return;
- const bounds=railDialog.value.getBoundingClientRect();
- if(event.clientX<bounds.left||event.clientX>bounds.right||event.clientY<bounds.top||event.clientY>bounds.bottom)closeRail();
-}
-function toggleGroup(id:string){expandedGroups.value=expandedGroups.value.includes(id)?expandedGroups.value.filter(item=>item!==id):[...expandedGroups.value,id];}
 const splitMin=computed(()=>Math.min(.5,320/Math.max(640,workWidth.value-8)));
 const splitMax=computed(()=>1-splitMin.value);
 const effectiveSplit=computed(()=>Math.min(splitMax.value,Math.max(splitMin.value,splitRatio.value)));
@@ -93,7 +77,7 @@ function finishColumnResize(event:PointerEvent){
 function restoreSide(){hiddenSide.value=null;nextTick(()=>columnHandle.value?.focus({preventScroll:true}));}
 function resizeColumnsWithKeyboard(event:KeyboardEvent){if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();setSplitRatio(effectiveSplit.value+(event.key==='ArrowLeft'?-.03:.03));}else if(event.key==='Home'||event.key==='End'){event.preventDefault();hiddenSide.value=event.key==='Home'?'learning':'coding';}}
 function togglePane(pane:NonNullable<typeof expandedPane.value>){endPanelResize();endColumnResize();expandedPane.value=expandedPane.value===pane?null:pane;}
-function restoreLayout(event:KeyboardEvent){if(event.key==='Escape'){if(railOpen.value){event.preventDefault();closeRail();}else if(expandedPane.value)expandedPane.value=null;else if(hiddenSide.value)restoreSide();}}
+function restoreLayout(event:KeyboardEvent){if(event.key==='Escape'){if(expandedPane.value)expandedPane.value=null;else if(hiddenSide.value)restoreSide();}}
 const panelMin=computed(()=>Math.ceil(runHeaderHeight.value)+2);
 const panelMax=computed(()=>Math.max(panelMin.value,codingHeight.value-200));
 const panelHeight=computed(()=>panelCollapsed.value?panelMin.value:Math.min(panelMax.value,Math.max(panelMin.value,(codingHeight.value||720)*panelRatio.value)));
@@ -130,9 +114,8 @@ const code=computed({get:()=>drafts.value[key.value]??initialCode.value,set:valu
 const result=computed(()=>results.value[key.value]);
 const pending=computed(()=>busy.value&&activeJobKey.value===key.value);
 const runLabel=computed(()=>pending.value?jobStatus.value==='connecting'?'连接中…':jobStatus.value==='queued'?'排队中…':'运行中…':exampleMode.value?'运行示例':'运行');
-const engineLabel=computed(()=>connection.value?.ready?`${track==='agent'?'LangGraph':'PyTorch'} ${connection.value.version} · ${track==='agent'?'本地':'CPU'}`:!localSite.value?'本地判题':checking.value?'连接中':'未连接');
+const engineLabel=computed(()=>connection.value?.ready?`${track==='agent'?'LangGraph':'PyTorch'} ${connection.value.version} · ${track==='agent'?'本地':'CPU'}`:checking.value?'连接中':'未连接');
 watch(key,()=>{panelTab.value='cases';copied.value=false;copyError.value=false;});
-const filteredModules=computed(()=>course.modules.filter(m=>!search.value.trim()||[m.title,...m.lessons.map(l=>l.name),...course.problems.filter(p=>p.moduleId===m.id).map(p=>`${p.id} ${p.title}`)].join(' ').toLowerCase().includes(search.value.trim().toLowerCase())));
 const relevantHistory=computed(()=>history.value.filter(h=>h.problemId===problem.value.id));
 const record=computed(()=>relevantHistory.value.find(h=>h.at===selectedRecord.value)||relevantHistory.value[0]);
 const failures=computed(()=>record.value?.result?.cases.filter(c=>c.status!=='passed')||[]);
@@ -141,16 +124,21 @@ const failedCase=computed(()=>failures.value[failedCaseIndex.value]||failures.va
 watch(record,()=>failedCaseIndex.value=0);
 
 const groupProblems=(id:string)=>mainProblems.filter(p=>p.moduleId===id);
-const completeCount=(id:string)=>groupProblems(id).filter(p=>solved.value.includes(p.id)).length;
 const isPass=(verdict:string)=>verdict==='AC';
-function chooseModule(id:string){practiceId.value=undefined;if(activeModule.value!==id){problemId.value=groupProblems(id)[0].id;lessonIndex.value=0;}activeModule.value=id;view.value='lesson';selectedRecord.value=undefined;closeRail();scrollToStart();}
-function switchTrack(next:'pytorch'|'agent'){closeRail();emit('switch-course',next);}
-function chooseProblem(p:Problem){practiceId.value=undefined;if(activeModule.value!==p.moduleId)lessonIndex.value=0;activeModule.value=p.moduleId;problemId.value=p.id;view.value='problem';selectedRecord.value=undefined;closeRail();scrollToStart();}
+function chooseModule(id:string){practiceId.value=undefined;if(activeModule.value!==id){problemId.value=groupProblems(id)[0].id;lessonIndex.value=0;}activeModule.value=id;view.value='lesson';selectedRecord.value=undefined;scrollToStart();}
+function chooseProblem(p:Problem){practiceId.value=undefined;if(activeModule.value!==p.moduleId)lessonIndex.value=0;activeModule.value=p.moduleId;problemId.value=p.id;view.value='problem';selectedRecord.value=undefined;scrollToStart();}
 function choosePractice(id?:string){practiceId.value=id;view.value='lesson';selectedRecord.value=undefined;scrollToStart();}
 function changeView(next:View){if(next==='problem')practiceId.value=undefined;view.value=next;scrollToStart();}
 function moveProblem(delta:number){const target=mainProblems[problemIndex.value+delta];if(target)chooseProblem(target);}
 function moveLesson(delta:number){const next=lessonIndex.value+delta;if(!module.value.lessons[next])return;practiceId.value=undefined;lessonIndex.value=next;view.value='lesson';scrollToStart();}
 function navigate(delta:number){if(functionContext.value)moveLesson(delta);else moveProblem(delta);}
+function notifyNavigation(){emit('navigation',{selected:functionContext.value?'module:'+activeModule.value:mainBase.value.id,completed:[...solved.value]});}
+watch([activeModule,functionContext,mainBase,solved],notifyNavigation,{deep:true});
+defineExpose({selectTarget:(id:string)=>{
+ if(id.startsWith('module:')){const moduleId=id.slice(7);if(!course.modules.some(module=>module.id===moduleId))return false;chooseModule(moduleId);}
+ else{const target=course.problems.find(problem=>problem.id===id);if(!target)return false;chooseProblem(target);}
+ return true;
+}});
 const navigationIndex=computed(()=>functionContext.value?lessonIndex.value:problemIndex.value);
 const navigationCount=computed(()=>functionContext.value?module.value.lessons.length:mainProblems.length);
 function remember(id:string,data:JudgeResult,capturedCode:string,jobId?:string){
@@ -162,7 +150,7 @@ function remember(id:string,data:JudgeResult,capturedCode:string,jobId?:string){
 }
 function save(){
  if(!mounted)return;
- try{localStorage.setItem(storageKey,JSON.stringify({version:course.version,drafts:drafts.value,solved:solved.value,history:history.value.slice(0,50),pendingRun:pendingRun.value,expandedGroups:expandedGroups.value,panelRatio:panelRatio.value,panelCollapsed:panelCollapsed.value,splitRatio:splitRatio.value,hiddenSide:hiddenSide.value,location:{module:activeModule.value,lesson:lessonIndex.value,problem:problemId.value,practice:practiceId.value,view:view.value}}));}catch{}
+ try{localStorage.setItem(storageKey,JSON.stringify({version:course.version,drafts:drafts.value,solved:solved.value,history:history.value.slice(0,50),pendingRun:pendingRun.value,panelRatio:panelRatio.value,panelCollapsed:panelCollapsed.value,splitRatio:splitRatio.value,hiddenSide:hiddenSide.value,location:{module:activeModule.value,lesson:lessonIndex.value,problem:problemId.value,practice:practiceId.value,view:view.value}}));}catch{}
 }
 async function resumeRun(){
  const job=pendingRun.value;if(!job)return;
@@ -199,7 +187,7 @@ async function execute(kind:'run'|'submit'){
   results.value={...results.value,[contextKey]:data};resultCode.value={...resultCode.value,[contextKey]:capturedCode};
  }finally{busy.value=false;jobStatus.value='';controller=undefined;if(!requestController.signal.aborted){pendingRun.value=undefined;save();}}
 }
-watch([drafts,solved,history,expandedGroups,panelRatio,panelCollapsed,splitRatio,hiddenSide,activeModule,lessonIndex,problemId,practiceId,view],()=>save(),{deep:true});
+watch([drafts,solved,history,panelRatio,panelCollapsed,splitRatio,hiddenSide,activeModule,lessonIndex,problemId,practiceId,view],()=>save(),{deep:true});
 onMounted(()=>{
  try{
   const data=JSON.parse(localStorage.getItem(storageKey)||'null');
@@ -223,38 +211,25 @@ onMounted(()=>{
    }
   }
  }catch{}
- try{const stored=JSON.parse(localStorage.getItem(storageKey)||'null');expandedGroups.value=stored?.version===course.version&&Array.isArray(stored.expandedGroups)?stored.expandedGroups.filter((id:unknown)=>course.modules.some(m=>m.id===id)):[activeModule.value];}catch{}
-
  if(codingPane.value){panelObserver=new ResizeObserver(entries=>codingHeight.value=entries[0].contentRect.height);panelObserver.observe(codingPane.value);}
  if(workArea.value){workObserver=new ResizeObserver(entries=>workWidth.value=entries[0].contentRect.width);workObserver.observe(workArea.value);}
  document.addEventListener('keydown',restoreLayout);
- window.addEventListener('resize',positionRail);window.addEventListener('scroll',positionRail,{passive:true});
  mounted=true;localSite.value=isLocalSite();if(localSite.value){checkConnection();if(pendingRun.value)resumeRun();}
 });
-onUnmounted(()=>{mounted=false;railDialog.value?.close();controller?.abort();healthController?.abort();panelObserver?.disconnect();workObserver?.disconnect();document.removeEventListener('keydown',restoreLayout);window.removeEventListener('resize',positionRail);window.removeEventListener('scroll',positionRail);clearTimeout(copyTimer);endPanelResize();endColumnResize();});
-onActivated(()=>{document.addEventListener('keydown',restoreLayout);window.addEventListener('resize',positionRail);window.addEventListener('scroll',positionRail,{passive:true});});
-onDeactivated(()=>{closeRail();document.removeEventListener('keydown',restoreLayout);window.removeEventListener('resize',positionRail);window.removeEventListener('scroll',positionRail);});
+onUnmounted(()=>{mounted=false;controller?.abort();healthController?.abort();panelObserver?.disconnect();workObserver?.disconnect();document.removeEventListener('keydown',restoreLayout);clearTimeout(copyTimer);endPanelResize();endColumnResize();});
+onActivated(()=>{document.addEventListener('keydown',restoreLayout);notifyNavigation();});
+onDeactivated(()=>{document.removeEventListener('keydown',restoreLayout);});
 </script>
 
 <template>
  <div class="pytorch-lab" :data-course="track" :aria-busy="!labReady">
   <div v-if="!labReady" class="lab-loading" role="status">正在准备学习界面…</div>
   <LocalStartGuide :open="showStartGuide" @close="showStartGuide=false"/>
-  <div ref="labGrid" class="lab-grid" :class="{'column-resizing':columnResizing,'preparing':!labReady}">
-   <dialog ref="railDialog" class="course-rail" :style="railPosition" aria-labelledby="course-rail-title" @cancel.prevent="closeRail" @close="railOpen=false" @click="railBackdropClick">
-    <header class="rail-heading"><strong id="course-rail-title">题目列表</strong><button type="button" aria-label="关闭题目列表" @click="closeRail"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button></header>
-    <nav class="course-switch" aria-label="切换学习课程"><button type="button" :class="{active:track==='pytorch'}" :aria-pressed="track==='pytorch'" @click="switchTrack('pytorch')">PyTorch 入门</button><button type="button" :class="{active:track==='agent'}" :aria-pressed="track==='agent'" @click="switchTrack('agent')">Agent 从 0 到 1</button></nav>
-    <div class="rail-top"><input v-model="search" aria-label="搜索题目或函数" placeholder="搜索题目 / 函数" autofocus/></div>
-    <div class="rail-list"><section v-for="m in filteredModules" :key="m.id" class="course-group" :data-module-id="m.id">
-     <button type="button" class="group-button" :class="{active:m.id===activeModule}" :aria-expanded="expandedGroups.includes(m.id)" :aria-controls="`course-group-${m.id}`" @click="toggleGroup(m.id)"><span class="group-toggle" aria-hidden="true">{{ expandedGroups.includes(m.id)?'−':'+' }}</span><span class="group-name">{{ m.title }}</span><small>{{ completeCount(m.id) }}/{{ groupProblems(m.id).length }}</small></button>
-     <div v-show="expandedGroups.includes(m.id)" :id="`course-group-${m.id}`" class="group-children"><button type="button" class="lesson-link" :class="{active:m.id===activeModule&&functionContext}" @click="chooseModule(m.id)"><svg class="rail-book" width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="3" y="2.5" width="14" height="15" rx="2" stroke="currentColor"/><path d="M6.5 2.5v15M9 7h5M9 10h5" stroke="currentColor"/></svg><span>函数学习</span></button><button v-for="p in groupProblems(m.id)" :key="p.id" type="button" class="problem-link" :class="{active:mainBase.id===p.id&&!functionContext}" @click="chooseProblem(p)"><span class="problem-mark" :class="{done:solved.includes(p.id)}" :aria-label="solved.includes(p.id)?'Accepted':'Not completed'"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.3"/><path v-if="solved.includes(p.id)" d="M6 10l2.6 2.6L14 7.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="rail-problem-title"><span class="rail-problem-number">{{ p.id.slice(1) }}.</span> {{ p.title }}</span><LevelDot :level="p.level" small/></button></div>
-    </section><p v-if="!filteredModules.length" class="rail-empty">没有找到匹配内容。</p></div>
-   </dialog>
+  <div class="lab-grid" :class="{'column-resizing':columnResizing,'preparing':!labReady}">
    <div ref="workArea" class="work-area" :class="{'single-pane':!!expandedPane,'side-collapsed':!!activeHiddenSide,'left-collapsed':activeHiddenSide==='learning','right-collapsed':activeHiddenSide==='coding','collapse-left-target':collapseTarget==='learning','collapse-right-target':collapseTarget==='coding'}" :style="workStyle">
    <PaneBookmark v-if="activeHiddenSide==='learning'" side="left" label="题目" @restore="restoreSide"/>
    <section v-show="activeHiddenSide!=='learning'&&(!expandedPane||expandedPane==='learning')" class="learning-pane" aria-label="函数讲解与题目">
     <nav class="learning-tabs" aria-label="学习内容">
-     <button type="button" class="rail-toggle" :aria-label="railOpen?'收起题目列表':'展开题目列表'" :title="railOpen?'收起题目列表':'展开题目列表'" :aria-expanded="railOpen" @click="toggleRail"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="2.5" y="3" width="15" height="14" rx="2" stroke="currentColor"/><path d="M7 3v14M10 7h4M10 10h4M10 13h4" stroke="currentColor"/></svg></button>
      <button v-for="tab in [{id:'lesson',name:'函数学习'},{id:'problem',name:'题目描述'},{id:'solution',name:'题解'},{id:'history',name:'提交记录'}]" :key="tab.id" type="button" :class="{active:view===tab.id}" @click="changeView(tab.id as View)">{{ tab.name }}</button>
      <span class="problem-navigation"><button type="button" :disabled="navigationIndex===0" :aria-label="functionContext?'上一个函数':'上一题'" :title="functionContext?'上一个函数':'上一题'" @click="navigate(-1)">‹</button><span>{{ navigationIndex+1 }} / {{ navigationCount }}</span><button type="button" :disabled="navigationIndex===navigationCount-1" :aria-label="functionContext?'下一个函数':'下一题'" :title="functionContext?'下一个函数':'下一题'" @click="navigate(1)">›</button></span>
      <PaneExpandButton :expanded="expandedPane==='learning'" label="题目区" @toggle="togglePane('learning')"/>
@@ -296,7 +271,7 @@ onDeactivated(()=>{closeRail();document.removeEventListener('keydown',restoreLay
    <div v-show="!expandedPane&&!activeHiddenSide" ref="columnHandle" class="column-divider" role="separator" aria-label="调整题目区与代码区宽度" title="拖到两侧边缘收起，双击恢复默认宽度" aria-orientation="vertical" :aria-valuemin="Math.round(splitMin*100)" :aria-valuemax="Math.round(splitMax*100)" :aria-valuenow="Math.round(effectiveSplit*100)" tabindex="0" @pointerdown="startColumnResize" @pointermove="updateColumnResize" @pointerup="finishColumnResize" @pointercancel="endColumnResize" @lostpointercapture="endColumnResize" @keydown="resizeColumnsWithKeyboard" @dblclick="splitRatio=.5"><i/></div>
    <section v-show="activeHiddenSide!=='coding'&&expandedPane!=='learning'" ref="codingPane" class="coding-pane" :class="{resizing,'expanded-editor':expandedPane==='editor','expanded-tests':expandedPane==='tests'}" aria-label="Python 编程与判题">
     <div v-show="expandedPane!=='tests'" class="editor-card">
-    <header class="editor-top"><span>{{ exampleMode?'调用示例':'Python 代码' }}</span><span class="engine-state" :class="{online:connection?.ready}"><i/>{{ engineLabel }}</span><button v-if="!localSite" type="button" class="small-action" @click="showStartGuide=true">启动指南</button><button type="button" class="small-action" title="重新检查判题环境" aria-label="重新检查判题环境" @click="checkConnection">↻</button><button type="button" class="small-action" @click="code=initialCode">重置</button><template v-if="expandedPane==='editor'"><button type="button" class="small-action" @click="togglePane('tests')">{{ panelTab==='result'?'运行结果':'测试用例' }}</button><button type="button" :disabled="busy" class="run-button" @click="execute('run')">{{ runLabel }}</button><button v-if="!exampleMode" type="button" :disabled="busy" class="submit-button" @click="execute('submit')">提交</button></template><PaneExpandButton :expanded="expandedPane==='editor'" label="代码区" @toggle="togglePane('editor')"/></header>
+    <header class="editor-top"><span>{{ exampleMode?'调用示例':'Python 代码' }}</span><span v-if="localSite" class="engine-state" :class="{online:connection?.ready}"><i/>{{ engineLabel }}</span><button v-if="localSite" type="button" class="small-action" title="重新检查判题环境" aria-label="重新检查判题环境" @click="checkConnection">↻</button><button type="button" class="small-action" @click="code=initialCode">重置</button><template v-if="expandedPane==='editor'"><button type="button" class="small-action" @click="togglePane('tests')">{{ panelTab==='result'?'运行结果':'测试用例' }}</button><button type="button" :disabled="busy" class="run-button" @click="execute('run')">{{ runLabel }}</button><button v-if="!exampleMode" type="button" :disabled="busy" class="submit-button" @click="execute('submit')">提交</button></template><PaneExpandButton :expanded="expandedPane==='editor'" label="代码区" @toggle="togglePane('editor')"/></header>
     <div class="main-editor"><PythonEditor :context-key="key" v-model="code" @run="execute('run')" @ready="labReady=true"/></div>
     </div>
 
@@ -312,7 +287,6 @@ onDeactivated(()=>{closeRail();document.removeEventListener('keydown',restoreLay
 
 
 <style scoped>
-.course-switch{display:flex;gap:3px;padding:4px;margin:14px 18px 0;background:var(--vp-code-bg);border-radius:7px;flex-shrink:0}.course-switch button{flex:1;padding:7px 3px;font-size:12px;border-radius:4px;color:var(--vp-c-text-2)}.course-switch button.active{background:var(--vp-c-bg);color:var(--lab-blue);box-shadow:0 1px 3px #00000010}.rail-shortcuts{display:flex;gap:8px;padding:13px 18px 0;flex-shrink:0}.rail-shortcuts button{font-size:12px;color:var(--lab-blue)}
 .lab-grid.preparing{visibility:hidden}.lab-loading{position:absolute;padding:25px;font-size:14px;color:var(--vp-c-text-2)}
 .pytorch-lab {
  --vp-c-bg:#fff; --vp-c-bg-alt:#fff; --vp-c-bg-soft:#f3f8fd;
@@ -337,31 +311,12 @@ onDeactivated(()=>{closeRail();document.removeEventListener('keydown',restoreLay
 .work-area.side-collapsed { gap:8px; }
 .collapse-left-target .learning-pane,.collapse-right-target .coding-pane { opacity:.55; }
 .collapse-left-target .column-divider i,.collapse-right-target .column-divider i { background:var(--lab-blue); }
-.course-rail { position:fixed; margin:0; padding:0; display:flex; flex-direction:column; min-height:0; min-width:0; max-width:100vw; max-height:100dvh; border:0; border-right:1px solid var(--vp-c-divider); border-radius:0; overflow:hidden; background:var(--vp-c-bg); color:var(--vp-c-text-1); box-shadow:8px 0 28px #00000024; }
-.course-rail:not([open]){display:none}.course-rail::backdrop{background:#15253640}.rail-heading{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--vp-c-divider);flex-shrink:0}.rail-heading strong{font-size:17px;font-weight:600}.rail-heading button{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:4px;color:var(--vp-c-text-2)}.rail-heading button:hover{background:var(--vp-code-bg)}
-.rail-top { padding:16px 18px 10px; flex-shrink:0; }
-.rail-top input { width:100%; padding:9px 11px; border:1px solid var(--vp-c-border); border-radius:6px; font-size:13px; background:var(--vp-c-bg); outline:none; }
-.rail-top input:focus { border-color:var(--lab-blue); }
-.rail-list { overflow:auto; flex:1; min-height:0; padding:0 18px 20px; }
-.course-group{border:1px solid var(--vp-c-divider);border-radius:8px;overflow:hidden;margin-bottom:14px}
-.group-button { display:flex; gap:8px; align-items:center; padding:12px; width:100%; text-align:left; font-size:13px; font-weight:600; background:var(--vp-code-bg); }
-.group-toggle{width:12px;flex-shrink:0;color:var(--vp-c-text-3)}.group-name { flex:1; min-width:0;line-height:1.6; }
-.group-button small { color:var(--vp-c-text-3); font-size:11px; font-weight:400; flex-shrink:0; }
-.group-children { padding:0; }
-.group-children button { display:flex; align-items:center; gap:10px; width:100%; min-height:48px; padding:11px 12px; text-align:left; font-size:13px; line-height:1.65; color:var(--vp-c-text-1); border-top:1px solid var(--vp-c-divider); }
-.group-children button:hover{background:var(--vp-code-bg)}.group-children button.active { background:var(--lab-blue-soft); color:var(--lab-blue); font-weight:500; }
-.rail-book{flex-shrink:0;color:var(--vp-c-text-3)}.lesson-link.active .rail-book{color:var(--lab-blue)}.rail-problem-title{flex:1;min-width:0;overflow-wrap:anywhere}.rail-problem-number{font:12px var(--vp-font-family-mono)}.problem-link :deep(.level-dot){flex-shrink:0}
-.problem-mark { display:flex;align-items:center;justify-content:center;width:18px;flex-shrink:0;color:var(--vp-c-text-3); }
-.problem-mark.done { color:var(--lab-blue); }
-.rail-empty { font-size:13px; color:var(--vp-c-text-3); padding:8px; }
 .learning-pane,.coding-pane { display:flex; flex-direction:column; min-width:0; min-height:0; }
 .learning-pane,.editor-card,.run-panel { border:1px solid var(--vp-c-divider); border-radius:10px; overflow:hidden; background:var(--vp-c-bg); }
 .learning-pane { container-type:inline-size; }
 .learning-tabs { display:flex; align-items:center; flex-wrap:wrap; gap:5px; min-height:48px; padding:6px 10px; border-bottom:1px solid var(--vp-c-divider); background:var(--vp-c-bg); flex-shrink:0; }
 .learning-tabs>button { padding:5px 8px; font-size:14px; font-weight:500; color:var(--vp-c-text-2); border:0; border-radius:5px; white-space:nowrap; }
 .learning-tabs>button.active { color:var(--lab-blue); background:var(--lab-blue-soft); }
-.learning-tabs .rail-toggle { display:flex; align-items:center; justify-content:center; align-self:center; width:24px; height:28px; padding:0; color:var(--vp-c-text-2); border:0; border-radius:4px; flex-shrink:0; margin-left:-5px; }
-.rail-toggle:hover { background:var(--lab-blue-soft); color:var(--lab-blue); }
 .problem-navigation { display:flex; align-items:center; gap:3px; margin-left:auto; color:var(--vp-c-text-2); font-size:12px; white-space:nowrap; }
 .problem-navigation button { font-size:24px; font-weight:500; line-height:30px; width:24px; height:30px; border-radius:4px; color:var(--lab-blue); }
 .problem-navigation button:hover:not(:disabled) { background:var(--lab-blue-soft); }
@@ -377,7 +332,7 @@ onDeactivated(()=>{closeRail();document.removeEventListener('keydown',restoreLay
 .editor-card { overflow:visible; }.editor-top { border-radius:10px 10px 0 0; }.main-editor { border-radius:0 0 10px 10px; }
 .expanded-editor .editor-card { height:100%; }
 .expanded-tests .run-panel { min-height:0; }
-@container(max-width:470px) { .problem-navigation>span { display:none; }.learning-tabs { gap:2px; padding:6px; }.learning-tabs>button { font-size:13px; padding:5px 6px; }.learning-tabs .rail-toggle { margin-left:0; }.learning-scroll { padding:22px 20px 30px; } }
+@container(max-width:470px) { .problem-navigation>span { display:none; }.learning-tabs { gap:2px; padding:6px; }.learning-tabs>button { font-size:13px; padding:5px 6px; }.learning-scroll { padding:22px 20px 30px; } }
 @container(max-width:390px) { .learning-tabs { column-gap:0; }.problem-navigation { margin-left:auto; } }
 @container(max-width:470px) { .editor-top { flex-wrap:wrap; padding:8px 10px; gap:6px; }.engine-state { font-size:10px; }.editor-top>span:first-child { font-size:13px; } }
 .pytorch-lab h2.pane-title { border:0; padding:0; font-size:23px; font-weight:600; line-height:1.5; margin:0 0 18px; letter-spacing:-.3px; }
