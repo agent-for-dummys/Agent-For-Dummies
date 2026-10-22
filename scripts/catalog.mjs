@@ -4,7 +4,7 @@ export const supplements = [
 ];
 
 export const groups = [
-  { title: 'Agent 应用', key: 'agent', ids: [1, 2, 3, 13, 14] },
+  { title: 'Agent 应用', key: 'agent', ids: [1, 2, 3, 13, 14, 16] },
   { title: '模型基础', key: 'models', ids: [4, 5, 6, 7, 8, 15] },
   { title: '工程基础', key: 'engineering', ids: [9, 10, 11] },
   { title: '多模态', key: 'multimodal', ids: [12] }
@@ -25,5 +25,6 @@ export const chapters = [
   { id: 12, slug: 'vlm-evaluation', title: 'VLM 评测' },
   { id: 13, slug: 'harness', title: 'harness' },
   { id: 14, slug: 'hermes', title: 'Hermes Agent' },
-  { id: 15, slug: 'nlp', title: 'NLP 基础' }
+  { id: 15, slug: 'nlp', title: 'NLP 基础' },
+  { id: 16, slug: 'agent-evaluation', title: 'Agent 评测' }
 ].map(chapter => ({ ...chapter, group: groups.find(group => group.ids.includes(chapter.id)).title, link: `/notes/${chapter.slug}`, children: supplements.filter(note => note.parentId === chapter.id) }));

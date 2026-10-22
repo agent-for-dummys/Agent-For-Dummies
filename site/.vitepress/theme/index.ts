@@ -12,6 +12,7 @@ export default {
   Layout,
   enhanceApp({ app, router }) {
     app.component('AlgorithmWalkthrough', AlgorithmWalkthrough);
+    app.component('AgentEvaluationDemo', defineAsyncComponent(() => import('./evaluation/AgentEvaluationDemo.vue')));
     const loadLab = () => import('./pytorch/PyTorchLab.vue');
     app.component('PyTorchLab', defineAsyncComponent(loadLab));
     if (!import.meta.env.SSR) {

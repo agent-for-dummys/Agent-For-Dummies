@@ -41,6 +41,7 @@ You can also use the search box in the navigation bar to find a topic or term.
 | 13 | [harness](/notes/harness) | Agent runtime environments, Harness Engineering, and long-running tasks. |
 | 14 | [Hermes Agent](/notes/hermes) | Agent Loop, context, memory, Gateway, and scheduled tasks. |
 | 15 | [NLP Fundamentals](/notes/nlp) | Word vectors, neural networks, RNNs, machine translation, and pretraining. |
+| 16 | [Agent Evaluation](/notes/agent-evaluation) | Evaluation datasets, traces, rubrics, metrics, and an interactive error diagnosis walkthrough. |
 
 [Browse the complete documentation catalog →](/catalog)
 

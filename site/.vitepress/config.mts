@@ -6,6 +6,7 @@ import { parenthesizedMath } from '../../scripts/parenthesized-math.mjs';
 import { hessianCallouts } from '../../scripts/hessian-callouts.mjs';
 import { imageWidths } from '../../scripts/image-widths.mjs';
 import { algorithmWalkthroughs } from '../../scripts/algorithm-walkthroughs.mjs';
+import { agentEvaluation } from '../../scripts/agent-evaluation.mjs';
 import { pytorchLab } from '../../scripts/pytorch-lab.mjs';
 import { pytorchContent } from '../../scripts/pytorch-content.mjs';
 
@@ -32,6 +33,7 @@ export default defineConfig({
       // Register last: this rule runs directly after inline parsing, before callouts.
       md.use(imageWidths);
       md.use(algorithmWalkthroughs);
+      md.use(agentEvaluation);
       md.use(pytorchLab);
     }
   },
