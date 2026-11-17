@@ -47,6 +47,7 @@ async function switchCourse(next: Track) {
   localStorage.setItem('learning-course', next);
   const url = new URL(location.href);
   url.searchParams.set('course', next);
+  url.searchParams.delete('task');
   history.replaceState(history.state, '', url);
   await nextTick();
   measure();
@@ -87,8 +88,9 @@ function practiceLink(event: MouseEvent) {
   switchCourse('agent');
   nextTick(measure);
 }
-onMounted(() => {
-  const requested = new URLSearchParams(location.search).get('course');
+onMounted(async () => {
+  const params = new URLSearchParams(location.search);
+  const requested = params.get('course');
   track.value = tracks.find(course => course === requested) ?? 'agent';
   measure();
   navObserver = new ResizeObserver(measure);
@@ -97,6 +99,11 @@ onMounted(() => {
   window.addEventListener('resize', measure);
   document.addEventListener('keydown', key);
   document.addEventListener('click', practiceLink, true);
+  const task = params.get('task');
+  if (track.value === 'development' && task && dockerTasks.some(entry => entry.id === task)) {
+    await nextTick();
+    await selectTarget(task);
+  }
 });
 onUnmounted(() => {
   navObserver?.disconnect();

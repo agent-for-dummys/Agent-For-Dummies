@@ -11,6 +11,7 @@ import { pytorchLab } from '../../scripts/pytorch-lab.mjs';
 import { pytorchContent } from '../../scripts/pytorch-content.mjs';
 
 import { dockerPractice } from '../../scripts/docker-practice.mjs';
+import { dockerPracticeCards } from '../../scripts/docker-practice-card.mjs';
 
 const base = process.env.SITE_BASE || '/';
 
@@ -37,6 +38,7 @@ export default defineConfig({
       md.use(algorithmWalkthroughs);
       md.use(agentEvaluation);
       md.use(pytorchLab);
+      md.use(dockerPracticeCards);
     }
   },
   themeConfig: {

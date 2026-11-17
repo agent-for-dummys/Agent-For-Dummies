@@ -1,6 +1,6 @@
 import type {CourseMap} from './course-navigation';
 
-export const expectedOutput = 'Hello！You will be a excellent coder！';
+export const expectedOutput = 'Hello！You will be an excellent coder！';
 export const dockerExample = `FROM ubuntu:24.04
 CMD ["echo", "Hello, Docker!"]`;
 
