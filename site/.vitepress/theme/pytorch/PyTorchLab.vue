@@ -2,30 +2,34 @@
 import {computed, KeepAlive, nextTick, onMounted, onUnmounted, ref} from 'vue';
 import pytorch from '../../../../oj/course.json';
 import agent from '../../../../oj/agent_course.json';
+import DockerWorkspace from './DockerWorkspace.vue';
+import {developmentMap, dockerTasks} from './docker-course';
 import CourseWorkspace from './CourseWorkspace.vue';
 import AgentWorkspace from './AgentWorkspace.vue';
 import CourseRoadmap from './CourseRoadmap.vue';
 import CourseCatalog from './CourseCatalog.vue';
-import {agentMap, pytorchMap, type NavigationState, type Track} from './course-navigation';
+import {agentMap, pytorchMap, trackTitles, type NavigationState, type Track} from './course-navigation';
 import {prepareLearningPage} from './editor-runtime';
 
 type Workspace = {selectTarget: (id: string) => boolean | Promise<boolean>};
 const track = ref<Track>('agent');
+const tracks = Object.keys(trackTitles) as Track[];
 const mapOpen = ref(true), catalogOpen = ref(false);
 const navBottom = ref(64), bookmarkTop = ref(168);
 const workspace = ref<Workspace>();
 const state = ref<Record<Track, NavigationState>>({
+  development: {selected: dockerTasks[0].id, completed: []},
   agent: {selected: agent.chapters[0].id, completed: []},
   pytorch: {selected: 'module:' + pytorch.modules[0].id, completed: []},
 });
-const maps = {agent: agentMap(agent), pytorch: pytorchMap(pytorch)};
+const maps = {agent: agentMap(agent), pytorch: pytorchMap(pytorch), development: developmentMap};
 const currentMap = computed(() => maps[track.value]);
 const currentState = computed(() => state.value[track.value]);
 let navObserver: ResizeObserver | undefined;
 
 function measure() {
   navBottom.value = Math.max(0, document.querySelector('.VPNav')?.getBoundingClientRect().bottom || 64);
-  const selector = track.value === 'agent' ? '.agent-ide .learning-content h1' : '.pytorch-lab .pane-title,.pytorch-lab .question-heading h2';
+  const selector = track.value === 'pytorch' ? '.pytorch-lab .pane-title,.pytorch-lab .question-heading h2' : '.agent-ide .learning-content h1';
   const title = document.querySelector<HTMLElement>(selector);
   const bounds = title?.getBoundingClientRect();
   bookmarkTop.value = !mapOpen.value && bounds && bounds.height > 0
@@ -85,7 +89,7 @@ function practiceLink(event: MouseEvent) {
 }
 onMounted(() => {
   const requested = new URLSearchParams(location.search).get('course');
-  track.value = requested === 'pytorch' ? 'pytorch' : 'agent';
+  track.value = tracks.find(course => course === requested) ?? 'agent';
   measure();
   navObserver = new ResizeObserver(measure);
   const nav = document.querySelector('.VPNav');
@@ -107,12 +111,13 @@ onUnmounted(() => {
     <div v-show="!mapOpen" class="practice-workspace">
       <KeepAlive>
         <AgentWorkspace v-if="track==='agent'" ref="workspace" key="agent" @navigation="updateState('agent',$event)"/>
-        <CourseWorkspace v-else ref="workspace" key="pytorch" track="pytorch" :course="pytorch" @navigation="updateState('pytorch',$event)"/>
+        <CourseWorkspace v-else-if="track==='pytorch'" ref="workspace" key="pytorch" track="pytorch" :course="pytorch" @navigation="updateState('pytorch',$event)"/>
+        <DockerWorkspace v-else ref="workspace" key="development" @navigation="updateState('development',$event)"/>
       </KeepAlive>
     </div>
     <CourseRoadmap v-if="mapOpen" :key="track" :map="currentMap" :track="track" :completed="currentState.completed" :nav-bottom="navBottom" @select="selectTarget" @close="mapOpen=false"/>
     <nav v-if="mapOpen" class="map-course-switch" :style="{top: (navBottom+24)+'px'}" aria-label="切换学习课程">
-      <button v-for="course in [{id:'agent',name:'Agent'},{id:'pytorch',name:'PyTorch'}]" :key="course.id" type="button" :class="{active:track===course.id}" :aria-pressed="track===course.id" @click="switchCourse(course.id as Track)">{{course.name}}</button>
+      <button v-for="course in tracks" :key="course" type="button" :class="{active:track===course}" :aria-pressed="track===course" @click="switchCourse(course)">{{trackTitles[course]}}</button>
     </nav>
     <CourseCatalog v-if="catalogOpen" :key="track" :track="track" :sections="currentMap.sections" :state="currentState" :nav-bottom="navBottom" @select="selectTarget" @close="catalogOpen=false"/>
     <nav class="practice-bookmarks" :style="{top: bookmarkTop+'px'}" aria-label="练习导航">
@@ -144,5 +149,6 @@ onUnmounted(() => {
 :global(.dark) .practice-shell{--lab-blue:#1688b9;--lab-blue-soft:#20374a}
 @media(min-width:1720px){.practice-workspace{padding-left:12px}}
 @media(max-width:600px){.practice-workspace{padding-left:40px}.practice-bookmarks{width:40px;gap:10px}.practice-bookmarks button{width:32px;height:104px;padding:10px 0}.practice-bookmarks button.active{width:40px}.practice-bookmarks span{font-size:11px;letter-spacing:1.5px}.map-course-switch{left:64px}}
+@media(max-width:390px){.map-course-switch button{min-width:0;padding-inline:10px}}
 @media(prefers-reduced-motion:reduce){.practice-bookmarks button{transition:none}}
 </style>

@@ -1,4 +1,5 @@
-export type Track = 'agent' | 'pytorch';
+export const trackTitles = {agent: 'Agent', pytorch: 'PyTorch', development: '开发基础'} as const;
+export type Track = keyof typeof trackTitles;
 export interface NavigationState { selected: string; completed: string[] }
 export interface CatalogItem { id: string; title: string; search?: string; learning?: boolean }
 export interface CourseSection {
@@ -8,7 +9,7 @@ export interface CourseSection {
   y: number;
   items: CatalogItem[];
   tasks: string[];
-  entry: string;
+  entry?: string;
 }
 export interface CourseMap { sections: CourseSection[]; edges: [string, string][] }
 

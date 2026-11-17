@@ -10,6 +10,8 @@ import { agentEvaluation } from '../../scripts/agent-evaluation.mjs';
 import { pytorchLab } from '../../scripts/pytorch-lab.mjs';
 import { pytorchContent } from '../../scripts/pytorch-content.mjs';
 
+import { dockerPractice } from '../../scripts/docker-practice.mjs';
+
 const base = process.env.SITE_BASE || '/';
 
 export default defineConfig({
@@ -108,7 +110,7 @@ export default defineConfig({
   vite: {
     server: { host: '127.0.0.1', port: 4173, strictPort: true, headers: { 'X-Agent-For-Dummies': 'local' } },
     envDir: root,
-    plugins: [pytorchContent(root), {
+    plugins: [pytorchContent(root), dockerPractice(root), {
       name: 'sync-repository-notes',
       configureServer(server) {
         server.middlewares.use('/__local-learning', (_request, response) => {

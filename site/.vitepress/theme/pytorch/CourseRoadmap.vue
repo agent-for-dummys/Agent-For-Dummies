@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import {computed,onMounted,onUnmounted,ref} from 'vue';
-import type {CourseMap,Track} from './course-navigation';
+import {trackTitles, type CourseMap, type Track} from './course-navigation';
 const props=defineProps<{map:CourseMap;track:Track;completed:string[];navBottom:number}>();
 const emit=defineEmits<{select:[id:string];close:[]}>();
 type Point={x:number;y:number};
 const canvas=ref<HTMLElement>(),zoom=ref(1),pan=ref<Point>({x:0,y:0});
 const dragging=ref(false),draggedNode=ref('');
-const cardWidth=236,cardHeight=104,storageKey=props.track==='agent'?'agent-roadmap-layout-v6':'pytorch-roadmap-layout-v1';
+const cardWidth=236,cardHeight=104;
+const storageKey={
+ agent:'agent-roadmap-layout-v6',
+ pytorch:'pytorch-roadmap-layout-v1',
+ development:'development-roadmap-layout-v2',
+}[props.track];
 const layout=props.map.sections;
 const initialPositions=()=>Object.fromEntries(layout.map(n=>[n.id,{x:n.x,y:n.y}]));
 const positions=ref<Record<string,Point>>(initialPositions());
@@ -26,7 +31,10 @@ const paths=computed(()=>edges.map(([from,to])=>{
  // Select attachment sides from the current positions, including reversed cards.
  if(Math.abs(dx)>Math.abs(dy)*.85){
   const sign=dx>=0?1:-1,ax=a.x+(sign>0?cardWidth:0),bx=b.x+(sign>0?0:cardWidth);
-  const ay=a.y+cardHeight/2,by=b.y+cardHeight/2,bend=Math.max(48,Math.abs(bx-ax)*.5);
+  const ay=a.y+cardHeight/2,bend=Math.max(48,Math.abs(bx-ax)*.5);
+  const incoming=props.track==='development'?edges.filter(([,target])=>target===to):[];
+  const offset=incoming.length>1?(incoming.findIndex(([source])=>source===from)-(incoming.length-1)/2)*34:0;
+  const by=b.y+cardHeight/2+offset;
   return `M ${ax+sign*6} ${ay} C ${ax+sign*bend} ${ay}, ${bx-sign*bend} ${by}, ${bx-sign*9} ${by}`;
  }
  const sign=dy>=0?1:-1,ax=a.x+cardWidth/2,bx=b.x+cardWidth/2;
@@ -47,6 +55,12 @@ function fit(){
  const minX=Math.min(...points.map(p=>p.x)),minY=Math.min(...points.map(p=>p.y));
  const worldWidth=Math.max(...points.map(p=>p.x))+cardWidth-minX;
  const worldHeight=Math.max(...points.map(p=>p.y))+cardHeight-minY;
+ if(props.track==='development'&&width<700){
+  const usableWidth=width-76;
+  zoom.value=Math.min(1.15,Math.max(.3,Math.min(usableWidth/worldWidth,(height-180)/worldHeight)));
+  pan.value={x:64+(usableWidth-worldWidth*zoom.value)/2-minX*zoom.value,y:70+(height-70-worldHeight*zoom.value)/2-minY*zoom.value};
+  return;
+ }
  zoom.value=Math.min(1.15,Math.max(width<700?.5:.3,Math.min((width-160)/worldWidth,(height-180)/worldHeight)));
  pan.value={x:(width<700?80:70+(width-70-worldWidth*zoom.value)/2)-minX*zoom.value,y:70+(height-70-worldHeight*zoom.value)/2-minY*zoom.value};
 }
@@ -78,7 +92,7 @@ function end(event:PointerEvent,cancel=false){
 }
 function select(id:string){
  const node=nodes.value.find(n=>n.id===id);
- if(node)emit('select',props.track==='agent'?(node.tasks.find(id=>!props.completed.includes(id))||node.entry):node.entry);
+ if(node?.entry)emit('select',props.track!=='pytorch'?(node.tasks.find(id=>!props.completed.includes(id))||node.entry):node.entry);
 }
 function click(event:MouseEvent,id:string){if(event.detail===0&&!suppressClick)select(id);suppressClick=false;}
 function nodeKey(event:KeyboardEvent,id:string){
@@ -95,14 +109,20 @@ onMounted(()=>{
 onUnmounted(()=>{window.removeEventListener('resize',fit);window.removeEventListener('keydown',key);});
 </script>
 <template>
-  <div id="course-roadmap" ref="canvas" class="course-map" :class="{dragging}" :style="{top:navBottom+'px'}" role="region" :aria-label="(track==='agent'?'Agent':'PyTorch')+' 学习路线图'" @wheel="wheel" @pointerdown="down" @pointermove="move" @pointerup="end($event)" @pointercancel="end($event,true)">
+  <div id="course-roadmap" ref="canvas" class="course-map" :class="{dragging}" :style="{top:navBottom+'px'}" role="region" :aria-label="trackTitles[track]+' 学习路线图'" @wheel="wheel" @pointerdown="down" @pointermove="move" @pointerup="end($event)" @pointercancel="end($event,true)">
    <div class="map-controls"><button type="button" aria-label="复位路线图" @click="reset"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5M8 12h8m-4-4v8"/></svg></button></div>
    <div class="map-world" :style="{transform:`translate(${pan.x}px,${pan.y}px) scale(${zoom})`}">
     <svg class="map-edges" aria-hidden="true"><defs><marker id="mini-pi-arrow" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M1 1 L5 3.5 L1 6"/></marker></defs><path v-for="(path,i) in paths" :key="i" :d="path" class="map-link" marker-end="url(#mini-pi-arrow)"/></svg>
-    <button v-for="node in nodes" :key="node.id" type="button" class="map-node" :class="{done:node.progress===1,'node-dragging':draggedNode===node.id}" :data-section="node.id" :style="{left:positions[node.id].x+'px',top:positions[node.id].y+'px'}" :aria-label="`${node.title}，已完成 ${node.count}/${node.tasks.length}，方向键移动，回车进入`" @click="click($event,node.id)" @keydown="nodeKey($event,node.id)">
+    <template v-for="node in nodes" :key="node.id">
+    <button v-if="node.entry" type="button" class="map-node" :class="{done:node.progress===1,'node-dragging':draggedNode===node.id}" :data-section="node.id" :style="{left:positions[node.id].x+'px',top:positions[node.id].y+'px'}" :aria-label="`${node.title}，已完成 ${node.count}/${node.tasks.length}，方向键移动，回车进入`" @click="click($event,node.id)" @keydown="nodeKey($event,node.id)">
      <span class="node-title">{{node.title}}</span>
      <span class="node-progress" role="progressbar" :aria-label="node.title+'学习进度'" :aria-valuenow="node.count" :aria-valuemin="0" :aria-valuemax="node.tasks.length"><i :style="{width:node.progress*100+'%'}"/></span>
     </button>
+    <div v-else class="map-node" :class="{'node-dragging':draggedNode===node.id}" :data-section="node.id" :style="{left:positions[node.id].x+'px',top:positions[node.id].y+'px'}">
+     <span class="node-title">{{node.title}}</span>
+     <span class="node-status">即将更新...</span>
+    </div>
+    </template>
    </div>
   </div>
 </template>
@@ -116,6 +136,7 @@ onUnmounted(()=>{window.removeEventListener('resize',fit);window.removeEventList
 .map-edges marker path{fill:none;stroke:currentColor;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round}
 .map-node{position:absolute;width:236px;height:104px;display:flex;flex-direction:column;gap:12px;padding:18px 27px;border:1px solid #dce3ec;border-radius:16px;background:#fff;color:#354355;box-shadow:0 3px 5px #29466b03,0 12px 32px -14px #29466b22;cursor:grab;user-select:none;transition:box-shadow .18s,border-color .18s,background .18s}
 .node-title{display:flex;align-items:center;flex:1;font-size:17px;line-height:24px;font-weight:550;letter-spacing:.1px;text-align:left}
+.node-status{color:var(--vp-c-text-2);font-size:13px;line-height:18px;text-align:left}
 .node-progress{display:block;flex-shrink:0;height:4px;width:100%;border-radius:4px;background:#e9edf2;overflow:hidden}
 .node-progress i{display:block;height:100%;background:#299bcc;border-radius:4px;transition:width .2s}
 .map-node.done{border-color:#bcdbe9}
