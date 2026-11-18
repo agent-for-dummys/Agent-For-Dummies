@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import {onMounted, onUnmounted, ref, watch} from 'vue';
+import {computed, onMounted, onUnmounted, ref, watch} from 'vue';
 import {useData, withBase} from 'vitepress';
 import type {Terminal} from '@xterm/xterm';
 import type {FitAddon} from '@xterm/addon-fit';
 import PaneExpandButton from './PaneExpandButton.vue';
 import '@xterm/xterm/css/xterm.css';
 
-const props = defineProps<{level: number; dockerfile: string; makefile: string; expanded: boolean}>();
-const emit = defineEmits<{expand: []}>();
+const props = defineProps<{level?: number; dockerfile?: string; makefile?: string; taskId?: string; files?: Record<string,string>; expanded: boolean}>();
+const emit = defineEmits<{expand: []; file:[name:string,content:string]}>();
+const label = computed(() => props.taskId?.startsWith('linux') ? 'Linux' : props.taskId?.startsWith('git') ? 'Git' : 'Docker');
+const syncedFiles = computed(() => props.files ?? {dockerfile:props.dockerfile ?? '',Makefile:props.makefile ?? ''});
 const {isDark} = useData();
 const host = ref<HTMLElement>();
 let terminal: Terminal | undefined;
@@ -15,7 +17,7 @@ let fit: FitAddon | undefined;
 let socket: WebSocket | undefined;
 let intersection: IntersectionObserver | undefined;
 let resize: ResizeObserver | undefined;
-const lastDraft: Partial<Record<'dockerfile' | 'Makefile', string>> = {};
+const lastDraft: Record<string,string> = {};
 let unmounted = false;
 
 function theme() {
@@ -31,8 +33,8 @@ function send(event: object) {
 }
 
 function saveDraft() {
-  const files = {dockerfile: props.dockerfile, Makefile: props.makefile};
-  for (const file of ['dockerfile', 'Makefile'] as const) {
+  const files = syncedFiles.value;
+  for (const file of Object.keys(files)) {
     if (lastDraft[file] !== files[file] && send({type: 'draft', file, draft: files[file]})) lastDraft[file] = files[file];
   }
 }
@@ -45,7 +47,7 @@ async function connect(element: HTMLElement) {
   fit = new FitAddon();
   terminal.loadAddon(fit);
   terminal.open(element);
-  terminal.textarea?.setAttribute('aria-label', 'Docker 终端输入');
+  terminal.textarea?.setAttribute('aria-label', label.value + ' 终端输入');
   resize = new ResizeObserver(() => {
     if (element.clientWidth && element.clientHeight) fit?.fit();
   });
@@ -59,16 +61,17 @@ async function connect(element: HTMLElement) {
 
   const url = new URL(withBase('/__local-docker-practice'), location.href);
   url.protocol = 'ws:';
-  url.searchParams.set('level', String(props.level));
+  if (props.taskId) url.searchParams.set('task', props.taskId);
+  else url.searchParams.set('level', String(props.level));
   socket = new WebSocket(url);
   socket.addEventListener('open', () => {
     if (!terminal) return;
-    lastDraft.dockerfile = props.dockerfile;
-    lastDraft.Makefile = props.makefile;
+    Object.assign(lastDraft, syncedFiles.value);
     send({type: 'start', files: lastDraft, cols: terminal.cols, rows: terminal.rows});
   });
   socket.addEventListener('message', event => {
     const message = JSON.parse(event.data);
+    if (message.type === 'file') {lastDraft[message.file] = message.data; emit('file',message.file,message.data);}
     if (message.type === 'output') terminal?.write(message.data);
     if (message.type === 'message') terminal?.writeln('\r\n' + message.data);
   });
@@ -83,7 +86,8 @@ async function connect(element: HTMLElement) {
   });
 }
 
-watch([() => props.dockerfile, () => props.makefile], saveDraft);
+watch(syncedFiles, saveDraft, {deep:true});
+defineExpose({read: (file:string) => send({type:'read',file})});
 watch(isDark, () => { if (terminal) terminal.options.theme = theme(); });
 
 onMounted(() => {
@@ -108,7 +112,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section class="terminal-panel" :class="{expanded}" aria-label="Docker 终端">
+  <section class="terminal-panel" :class="{expanded}" :aria-label="label + ' 终端'">
     <header class="terminal-toolbar">
       <span class="terminal-tab">终端</span>
       <PaneExpandButton :expanded="expanded" label="终端" @toggle="emit('expand')"/>

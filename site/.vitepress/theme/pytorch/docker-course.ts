@@ -1,3 +1,4 @@
+import {foundationTasks} from '../../../../exercises/foundations/tasks.mjs';
 import type {CourseMap} from './course-navigation';
 
 export const expectedOutput = 'Hello！You will be an excellent coder！';
@@ -51,6 +52,8 @@ export const dockerTasks = [
   },
 ];
 
+export const developmentTasks = [...dockerTasks, ...foundationTasks];
+
 export const developmentMap: CourseMap = {
   sections: [{
     id: 'docker',
@@ -65,15 +68,17 @@ export const developmentMap: CourseMap = {
     title: 'Git',
     x: 0,
     y: 0,
-    items: [],
-    tasks: [],
+    items: foundationTasks.filter(task=>task.subject==='git'),
+    tasks: foundationTasks.filter(task=>task.subject==='git').map(task=>task.id),
+    entry: 'git-commit',
   }, {
     id: 'linux',
     title: 'Linux',
     x: 0,
     y: 152,
-    items: [],
-    tasks: [],
+    items: foundationTasks.filter(task=>task.subject==='linux'),
+    tasks: foundationTasks.filter(task=>task.subject==='linux').map(task=>task.id),
+    entry: 'linux-files',
   }],
   edges: [['git', 'docker'], ['linux', 'docker']],
 };

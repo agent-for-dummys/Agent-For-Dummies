@@ -44,7 +44,9 @@
 | 14 | [Hermes Agent](/notes/hermes) | Agent Loop、上下文、记忆、Gateway 与定时任务。 |
 | 15 | [NLP 基础](/notes/nlp) | 词向量、神经网络、RNN、机器翻译与预训练。 |
 | 16 | [Agent 评测](/notes/agent-evaluation) | 评测集、Trace、Rubric、常用指标与错误定位演示。 |
-| 17 | [Docker](/notes/docker) | 镜像、容器、Dockerfile、数据卷与 Docker Compose。 |
+| 17 | [Linux](/notes/linux) | 终端、文件操作、权限、管道与运行排查。 |
+| 18 | [Git](/notes/git) | 提交、远端同步、分支管理与合并冲突。 |
+| 19 | [Docker](/notes/docker) | 镜像、容器、Dockerfile、数据卷与 Docker Compose。 |
 
 [查看完整文档目录 →](/catalog)
 

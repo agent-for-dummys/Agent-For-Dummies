@@ -2,8 +2,8 @@
 import {computed, KeepAlive, nextTick, onMounted, onUnmounted, ref} from 'vue';
 import pytorch from '../../../../oj/course.json';
 import agent from '../../../../oj/agent_course.json';
-import DockerWorkspace from './DockerWorkspace.vue';
-import {developmentMap, dockerTasks} from './docker-course';
+import DevelopmentWorkspace from './DevelopmentWorkspace.vue';
+import {developmentMap, dockerTasks, developmentTasks} from './docker-course';
 import CourseWorkspace from './CourseWorkspace.vue';
 import AgentWorkspace from './AgentWorkspace.vue';
 import CourseRoadmap from './CourseRoadmap.vue';
@@ -100,7 +100,7 @@ onMounted(async () => {
   document.addEventListener('keydown', key);
   document.addEventListener('click', practiceLink, true);
   const task = params.get('task');
-  if (track.value === 'development' && task && dockerTasks.some(entry => entry.id === task)) {
+  if (track.value === 'development' && task && developmentTasks.some(entry => entry.id === task)) {
     await nextTick();
     await selectTarget(task);
   }
@@ -119,7 +119,7 @@ onUnmounted(() => {
       <KeepAlive>
         <AgentWorkspace v-if="track==='agent'" ref="workspace" key="agent" @navigation="updateState('agent',$event)"/>
         <CourseWorkspace v-else-if="track==='pytorch'" ref="workspace" key="pytorch" track="pytorch" :course="pytorch" @navigation="updateState('pytorch',$event)"/>
-        <DockerWorkspace v-else ref="workspace" key="development" @navigation="updateState('development',$event)"/>
+        <DevelopmentWorkspace v-else ref="workspace" key="development" @navigation="updateState('development',$event)"/>
       </KeepAlive>
     </div>
     <CourseRoadmap v-if="mapOpen" :key="track" :map="currentMap" :track="track" :completed="currentState.completed" :nav-bottom="navBottom" @select="selectTarget" @close="mapOpen=false"/>

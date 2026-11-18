@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import {computed} from 'vue';
 import {withBase} from 'vitepress';
+import {foundationTasks} from '../../../exercises/foundations/tasks.mjs';
 import {dockerTasks, expectedOutput} from './pytorch/docker-course';
 
-const props = defineProps<{level: 1 | 2}>();
-const task = computed(() => dockerTasks[props.level - 1]);
+const props = withDefaults(defineProps<{level: 1 | 2; subject?: 'docker'|'linux'|'git'}>(),{subject:'docker'});
+const task = computed(() => (props.subject==='docker'?dockerTasks:foundationTasks.filter(task=>task.subject===props.subject))[props.level - 1]);
 const href = computed(() => withBase('/practice?course=development&task=' + encodeURIComponent(task.value.id)));
 </script>
 
@@ -18,7 +19,12 @@ const href = computed(() => withBase('/practice?course=development&task=' + enco
     </header>
     <div class="practice-card-content">
       <strong>{{ task.title }}</strong>
-      <template v-if="level === 1">
+      <template v-if="subject !== 'docker'">
+        <p>{{task.goal}}</p>
+        <ol><li v-for="item in task.requirements" :key="item">{{item}}</li></ol>
+        <p><strong>验收</strong>　{{task.expected}}</p>
+      </template>
+      <template v-else-if="level === 1">
         <p>你拿到一个小型 C++ 项目，里面有 <code>main.cpp</code> 和写好的 <code>Makefile</code>。现在给它补一份 <code>dockerfile</code>，让别人拿到项目后也能用 Docker 编译和运行。</p>
         <p>以 <code>ubuntu:24.04</code> 为基础镜像，把编译工具和项目文件放进去。构建时用 <code>make</code> 生成 <code>hello</code>，容器启动时执行它。</p>
         <p><strong>验收</strong>　运行 <code>coder:step1</code>，终端应输出这一行：</p>
